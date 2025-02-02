@@ -1,0 +1,49 @@
+<!-- Departing Airports Section -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Departing Airports</h3>
+        <small class="text-muted">Select 1-3 airports</small>
+    </div>
+    <div class="card-body">
+        <div id="airports-container">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="airport-input-group">
+                        <label class="form-label">Airport 1 (Required)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control airport-input" 
+                                   placeholder="Enter airport code or city"
+                                   data-airport-index="0">
+                            <input type="hidden" class="airport-code" name="airport_code_0">
+                        </div>
+                        <div class="airport-suggestions"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="airport-input-group">
+                        <label class="form-label">Airport 2 (Optional)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control airport-input" 
+                                   placeholder="Enter airport code or city"
+                                   data-airport-index="1">
+                            <input type="hidden" class="airport-code" name="airport_code_1">
+                        </div>
+                        <div class="airport-suggestions"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="airport-input-group">
+                        <label class="form-label">Airport 3 (Optional)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control airport-input" 
+                                   placeholder="Enter airport code or city"
+                                   data-airport-index="2">
+                            <input type="hidden" class="airport-code" name="airport_code_2">
+                        </div>
+                        <div class="airport-suggestions"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/trip_results.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<style>
+.trip-type-box {
+    border: 2px solid #0d6efd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.trip-type-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+}
+
+.trip-type-box.selected {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.trip-type-box i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.trip-type-box.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+}
+
+.trip-type-box.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.airport-suggestions {
+    position: absolute;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 0 0 4px 4px;
+    z-index: 1000;
+    display: none;
+}
+
+.airport-suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.airport-suggestion:hover {
+    background-color: #f8f9fa;
+}
+
+.airport-input-group {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+/* Airport Suggestions */
+.airport-input-group {
+    position: relative;
+}
+
+.airport-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion:hover {
+    background-color: #f8f9fa;
+}
+
+.suggestion:last-child {
+    border-bottom: none;
+}
+</style>
+
+<div class="container mt-4">
+    <!-- Points Programs Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Your Points Programs</h3>
+        </div>
+        <div class="card-body">
+            <!-- Add New Program Section -->
+            <div class="accordion" id="loyaltyProgramAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#addProgramCollapse">
+                            Add New Program
+                        </button>
+                    </h2>
+                    <div id="addProgramCollapse" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div class="mb-3">
+                                <label class="form-label">Select Program Type</label>
+                                <select class="form-select" id="programType">
+                                    <option value="">Choose program type...</option>
+                                    <option value="airline">Airlines</option>
+                                    <option value="hotel">Hotels</option>
+                                    <option value="creditcard">Credit Cards</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Airline Programs -->
+                            <div class="mb-3 program-select" id="airlineSelect" style="display: none;">
+                                <label class="form-label">Select Airline Program</label>
+                                <select class="form-select" id="airlineProgram">
+                                    <option value="">Choose airline program...</option>
+                                    <option value="United MileagePlus">United MileagePlus</option>
+                                    <option value="American AAdvantage">American AAdvantage</option>
+                                    <option value="Delta SkyMiles">Delta SkyMiles</option>
+                                    <option value="Southwest Rapid Rewards">Southwest Rapid Rewards</option>
+                                    <option value="Alaska Mileage Plan">Alaska Mileage Plan</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Hotel Programs -->
+                            <div class="mb-3 program-select" id="hotelSelect" style="display: none;">
+                                <label class="form-label">Select Hotel Program</label>
+                                <select class="form-select" id="hotelProgram">
+                                    <option value="">Choose hotel program...</option>
+                                    <option value="Marriott Bonvoy">Marriott Bonvoy</option>
+                                    <option value="Hilton Honors">Hilton Honors</option>
+                                    <option value="World of Hyatt">World of Hyatt</option>
+                                    <option value="IHG One Rewards">IHG One Rewards</option>
+                                    <option value="Wyndham Rewards">Wyndham Rewards</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Credit Card Programs -->
+                            <div class="mb-3 program-select" id="creditcardSelect" style="display: none;">
+                                <label class="form-label">Select Credit Card Program</label>
+                                <select class="form-select" id="creditcardProgram">
+                                    <option value="">Choose credit card program...</option>
+                                    <option value="Chase Ultimate Rewards">Chase Ultimate Rewards</option>
+                                    <option value="American Express Membership Rewards">American Express Membership Rewards</option>
+                                    <option value="Citi ThankYou Points">Citi ThankYou Points</option>
+                                    <option value="Capital One Miles">Capital One Miles</option>
+                                    <option value="Discover Rewards">Discover Rewards</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Points Balance</label>
+                                <input type="number" class="form-control" id="pointsBalance" min="0">
+                            </div>
+                            
+                            <button id="addProgram" class="btn btn-primary">Add Program</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Programs Section -->
+            <div class="mt-4">
+                <h4>Active Loyalty Programs</h4>
+                <div id="active-programs">
+                    {% if current_user.is_authenticated %}
+                        {% for program in points_programs %}
+                        <div class="card mb-2 program-card" data-id="{{ program.id }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">{{ program.program_name }}</h5>
+                                    <div class="d-flex align-items-center">
+                                        <input type="number" class="form-control form-control-sm points-balance me-2" 
+                                               value="{{ program.points_balance }}" style="width: 120px;">
+                                        <button class="btn btn-sm btn-primary update-points me-2">Update</button>
+                                        <button class="btn btn-sm btn-danger delete-program">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trip Types Section -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Trip Types</h3>
+            <small class="text-muted">Select up to 2 trip types</small>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 justify-content-center">
+                <div class="col-6 col-md-2">
+                    <div class="trip-type-box text-center" data-type="beach">
+                        <i class="fas fa-umbrella-beach"></i>
+                        <h5>Beach Getaway</h5>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="trip-type-box text-center" data-type="city">
+                        <i class="fas fa-city"></i>
+                        <h5>City Break</h5>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="trip-type-box text-center" data-type="historical">
+                        <i class="fas fa-landmark"></i>
+                        <h5>Historical Sites</h5>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="trip-type-box text-center" data-type="outdoor">
+                        <i class="fas fa-hiking"></i>
+                        <h5>Outdoor Adventure</h5>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="trip-type-box text-center" data-type="offgrid">
+                        <i class="fas fa-campground"></i>
+                        <h5>Off The Grid</h5>
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="trip-type-box text-center" data-type="events">
+                        <i class="fas fa-ticket-alt"></i>
+                        <h5>Concerts & Events</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'departing_airports.html' %}
+    {% include 'trip_info.html' %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}{% endblock %}

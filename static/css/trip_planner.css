@@ -1,0 +1,130 @@
+.loading-container {
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+.travel-plan {
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 2rem;
+}
+
+.plan-content {
+    white-space: pre-line;
+    line-height: 1.6;
+}
+
+/* Airport Suggestions */
+.airport-suggestions {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion:hover {
+    background-color: #f8f9fa;
+}
+
+.airport-input-group {
+    position: relative;
+}
+
+.trip-type-box {
+    border: 2px solid #0d6efd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.trip-type-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+}
+
+.trip-type-box.selected {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.trip-type-box i {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.trip-type-box.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+}
+
+.trip-type-box.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Loyalty Program Card Styling */
+.points-card {
+    width: calc(33.33% - 1rem);  /* 3 columns with spacing */
+    margin: 0.5rem;  /* Even spacing between cards */
+}
+
+.points-card .card-body {
+    padding: 1rem;
+}
+
+.points-card .card-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.points-card .card-text {
+    font-size: 0.9rem;
+}
+
+.points-card .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.points-card .input-group {
+    margin-top: 0.5rem;
+}
+
+/* Make active programs container use grid layout */
+#active-programs {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin: -0.5rem;  /* Compensate for card margins */
+}

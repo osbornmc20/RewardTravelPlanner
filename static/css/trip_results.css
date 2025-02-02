@@ -1,0 +1,224 @@
+.trip-result-card {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #ddd;
+}
+
+.trip-result-card h3 {
+    margin: 0 0 10px 0;
+}
+
+.trip-result-card p {
+    margin: 0 0 20px 0;
+}
+
+.trip-option {
+    flex: 1;
+    padding: 15px;
+    background: #f9f9f9;
+}
+
+.trip-option h4 {
+    margin: 0 0 15px 0;
+}
+
+.trip-option h5 {
+    margin: 15px 0 10px 0;
+}
+
+.flight-details,
+.hotel-option,
+.value-analysis {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #0066cc;
+    border-radius: 4px;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-label {
+    flex: 0 0 200px;
+}
+
+.detail-value {
+    flex: 1;
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .detail-row {
+        flex-direction: column;
+    }
+    
+    .detail-value {
+        text-align: left;
+    }
+}
+
+.trip-section {
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.trip-section .card-title {
+    color: #0066cc;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #0066cc;
+}
+
+.trip-section .card-text p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.trip-section .card-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* Style for nested content */
+.trip-section .card-text ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.trip-section .card-text li {
+    margin-bottom: 0.5rem;
+}
+
+/* Add some spacing between sections */
+.trip-section + .trip-section {
+    margin-top: 2rem;
+}
+
+/* Style for error messages */
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+}
+
+/* Style for loading state */
+.loading {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading i {
+    color: #0066cc;
+    font-size: 2rem;
+}
+
+#trip-results pre {
+    white-space: pre-wrap;       /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap;  /* Mozilla */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.5;
+    padding: 20px;
+    margin: 0;
+    background: none;
+    border: none;
+}
+
+.trip-experiences {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.economy-experience,
+.luxury-experience {
+    flex: 1;
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.experience-header {
+    font-size: 1.25rem;
+    color: #0066cc;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #0066cc;
+}
+
+.flight-details,
+.hotel-option,
+.value-analysis {
+    margin-bottom: 1.5rem;
+}
+
+.section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #0d6efd;
+    border-radius: 0.25rem;
+}
+
+.section-title {
+    color: #0d6efd;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.detail-value {
+    text-align: right;
+    color: #212529;
+}
+
+/* Points Breakdown indentation */
+.detail-row[class*="Airline:"],
+.detail-row[class*="Hotel:"] {
+    padding-left: 1.5rem;
+    font-size: 0.95em;
+    color: #666;
+}
+
+.property-details {
+    margin-top: 1rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .trip-experiences {
+        flex-direction: column;
+    }
+    
+    .economy-experience,
+    .luxury-experience {
+        margin-bottom: 1rem;
+    }
+}
