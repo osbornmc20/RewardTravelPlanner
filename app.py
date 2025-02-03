@@ -314,168 +314,6 @@ def index():
     return render_template('index.html', points_programs=points_programs)
 
 # Trip planning route
-@app.route('/api/trip/plan', methods=['POST'])
-@login_required
-def plan_trip():
-    if not api_key:
-        return jsonify({
-            'status': 'error',
-            'message': 'OpenAI API key not configured properly.'
-        }), 500
-
-    data = request.json
-    prompt = generate_trip_prompt(data)
-    
-    try:
-        # Call OpenAI API using requests library
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers=openai_headers,
-            json={
-                "model": "gpt-4",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": """You are an expert travel planner with access to real-time flight, weather, and event information. 
-                        Your task is to create detailed, personalized trip plans based on user preferences.
-                        Always format your response as valid JSON objects."""
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            }
-        )
-        
-        # Print response headers and status for debugging
-        print("Response Status:", response.status_code)
-        print("Response Headers:", dict(response.headers))
-        
-        # Check for authentication errors
-        if response.status_code == 401:
-            error_data = response.json()
-            print(f"Authentication Error: {error_data}")
-            return jsonify({
-                'status': 'error',
-                'message': f'OpenAI API authentication failed: {error_data.get("error", {}).get("message", "Unknown error")}'
-            }), 500
-        
-        response.raise_for_status()
-        
-        # Parse the response
-        result = response.json()
-        print("OpenAI API Response:", result)
-        
-        # Extract the trip plan from the response
-        trip_plan = json.loads(result['choices'][0]['message']['content'])
-        
-        return jsonify({
-            'status': 'success',
-            'trip_plan': trip_plan
-        })
-        
-    except requests.exceptions.RequestException as e:
-        error_message = str(e)
-        print(f"Request Exception: {error_message}")
-        
-        if hasattr(e, 'response') and e.response is not None:
-            try:
-                error_data = e.response.json()
-                error_message = error_data.get('error', {}).get('message', str(e))
-                print(f"Error Response: {error_data}")
-            except:
-                pass
-        
-        return jsonify({
-            'status': 'error',
-            'message': f'Error generating trip plan: {error_message}'
-        }), 500
-
-def generate_trip_prompt(trip_data):
-    trip_types = ' and '.join(trip_data['trip_types'])
-    airports = ', '.join(trip_data['airports'])
-    duration = trip_data['trip_length']
-    max_flight_length = trip_data['max_flight_length']
-    direct_flights = 'direct flights only' if trip_data['direct_flights'] else 'including connecting flights'
-    preferences = trip_data.get('user_preferences', '')
-    
-    # Include points programs information in the prompt
-    points_info = ""
-    if trip_data.get('points_programs'):
-        points_info = "\nI have the following loyalty program points available:\n"
-        for program in trip_data['points_programs']:
-            points_info += f"- {program['program_name']}: {program['points_balance']} points\n"
-    
-    return f"""Given the following trip preferences, generate exactly 3 destination options with points redemption options.
-    Format the response as a valid JSON object with this exact structure:
-
-    {{
-        "destinations": [
-            {{
-                "name": "City, Country",
-                "preference_match": "Brief explanation of why this destination matches preferences",
-                "economy": {{
-                    "route": "LAX to XYZ",
-                    "airline": "Airline Name",
-                    "points_program": "Program Name",
-                    "points_used": "35,000 points",
-                    "total_points": "70,000 points round trip",
-                    "hotel": {{
-                        "property": "Hotel Name and Location",
-                        "points_program": "Program Name",
-                        "total_points": "90,000 points (15,000 points per night)",
-                        "details": "Brief description of property and location"
-                    }},
-                    "value_analysis": {{
-                        "total_points": "160,000 points",
-                        "airline_points": "70,000 points (Program Name)",
-                        "hotel_points": "90,000 points (Program Name)",
-                        "dollar_value": "Approx. $3,280 (using point valuations provided)"
-                    }}
-                }},
-                "luxury": {{
-                    "route": "LAX to XYZ",
-                    "airline": "Airline Name",
-                    "points_program": "Program Name",
-                    "points_used": "35,000 points",
-                    "total_points": "70,000 points round trip",
-                    "hotel": {{
-                        "property": "Luxury Hotel Name and Location",
-                        "points_program": "Program Name",
-                        "total_points": "150,000 points (25,000 points per night)",
-                        "details": "Brief description of luxury amenities"
-                    }},
-                    "value_analysis": {{
-                        "total_points": "220,000 points",
-                        "airline_points": "70,000 points (Program Name)",
-                        "hotel_points": "150,000 points (Program Name)",
-                        "dollar_value": "Approx. $4,510 (using point valuations provided)"
-                    }}
-                }}
-            }}
-        ]
-    }}
-
-    Trip Preferences:
-    - Trip Types: {trip_types}
-    - Departing from: {airports}
-    - Trip Length: {duration} days
-    - Flight Preferences: {direct_flights}, max {max_flight_length} hours
-    - Additional Preferences: {preferences}
-    {points_info}
-
-    Requirements:
-    1. Provide EXACTLY 3 different destinations
-    2. All points calculations should be realistic based on current redemption rates
-    3. Each destination must include both economy and luxury options
-    4. Keep property details and preference match explanations brief and focused
-    5. Format all points values with commas and the word "points"
-    6. Include "round trip" in total points for flights
-    7. Include "points per night" in hotel total points
-    8. Start all dollar values with "Approx. $"
-    """
-
 @app.route('/generate_trip', methods=['POST'])
 def generate_trip():
     try:
@@ -489,18 +327,25 @@ def generate_trip():
         # Initialize the travel plan generator
         travel_planner = TravelPlanGenerator()
         
-        # Generate the travel plan
-        result = travel_planner.generate_travel_plan(data)
-        
-        return jsonify(result)
+        try:
+            # Generate the travel plan
+            result = travel_planner.generate_travel_plan(data)
+            return jsonify(result)
+        except Exception as e:
+            print(f"Error generating travel plan: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': 'Error generating travel plan. Please try again.'
+            }), 500
         
     except Exception as e:
         print(f"Error in generate_trip route: {str(e)}")
         return jsonify({
             'success': False,
             'error': str(e)
-        }), 500
+        }), 400  # Changed to 400 for client errors
 
+# Test OpenAI API connection
 @app.route('/test_openai', methods=['GET'])
 def test_openai():
     try:

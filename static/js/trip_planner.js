@@ -168,31 +168,33 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Response status:', response.status);
             console.log('Response ok:', response.ok);
             
-            if (!response.ok) {
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    const data = await response.json();
-                    throw new Error(data.message || data.error || 'Failed to generate trip');
-                } else {
-                    const text = await response.text();
-                    console.error('Non-JSON error response:', text);
-                    throw new Error('Server error occurred. Please try again.');
+            let errorMessage;
+            try {
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (!response.ok || !data.success) {
+                    errorMessage = data.error || 'Failed to generate trip';
+                    throw new Error(errorMessage);
                 }
+                
+                // Update results container
+                displayTripResults(data);
+            } catch (jsonError) {
+                if (jsonError.message === errorMessage) {
+                    throw jsonError;
+                }
+                // If we can't parse JSON, try to get the text
+                const text = await response.text();
+                console.error('Response text:', text);
+                throw new Error('Server error occurred. Please try again.');
             }
-            
-            const data = await response.json();
-            console.log('Response data:', data);
-            
-            // Update results container
-            displayTripResults(data);
-
         } catch (error) {
             console.error('Error generating trip:', error);
             const resultsContainer = document.getElementById('trip-results');
             resultsContainer.innerHTML = `
                 <div class="alert alert-danger">
                     <strong>Error:</strong> ${error.message || 'An unexpected error occurred. Please try again.'}
-                    ${error.message.includes('login') ? '<br><a href="/login" class="alert-link">Click here to log in</a>' : ''}
                 </div>
             `;
         } finally {

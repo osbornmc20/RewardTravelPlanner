@@ -281,19 +281,24 @@
             <!-- Active Programs Section -->
             <div class="mt-4">
                 <h4>Active Loyalty Programs</h4>
-                <div id="active-programs">
+                <div id="active-programs" class="d-flex flex-column gap-3">
                     {% if current_user.is_authenticated %}
                         {% for program in points_programs %}
                         <div class="card program-card" data-id="{{ program.id }}">
                             <div class="card-body">
-                                <h5 class="card-title">{{ program.program_name }}</h5>
+                                <h5 class="card-title text-wrap">{{ program.program_name }}</h5>
                                 <div class="points-input-group">
                                     <input type="number" 
                                            class="form-control" 
-                                           value="{{ program.points_balance }}">
-                                    <div class="button-group">
-                                        <button class="btn btn-primary update-points">Update</button>
-                                        <button class="btn btn-danger delete-program">Delete</button>
+                                           value="{{ program.points_balance }}"
+                                           aria-label="Points balance">
+                                    <div class="button-group d-flex gap-2">
+                                        <button class="btn btn-primary update-points d-flex align-items-center justify-content-center">
+                                            <span>Update</span>
+                                        </button>
+                                        <button class="btn btn-danger delete-program d-flex align-items-center justify-content-center">
+                                            <span>Delete</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
