@@ -3,6 +3,7 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/trip_results.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}
 
@@ -104,6 +105,100 @@
 .suggestion:last-child {
     border-bottom: none;
 }
+
+/* Enhanced responsive styles for points program cards */
+@media (max-width: 768px) {
+    #active-programs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 0.5rem;
+    }
+
+    .program-card {
+        flex: 1 1 300px;
+        margin: 0 !important;
+    }
+
+    .program-card .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .program-card .card-title {
+        font-size: 1.1rem;
+        margin: 0 !important;
+        text-align: left;
+    }
+
+    .program-card .points-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .program-card .points-balance {
+        flex: 1;
+        min-width: 100px;
+        height: 38px;
+        font-size: 1rem;
+    }
+
+    .program-card .btn-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .program-card .btn {
+        flex: 1;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 576px) {
+    .program-card {
+        flex: 1 1 100%;
+    }
+
+    .program-card .card-body {
+        padding: 0.75rem;
+    }
+
+    .program-card .btn {
+        padding: 0.5rem;
+    }
+}
+
+/* Responsive styles for points program cards */
+@media (max-width: 768px) {
+    .program-card .card-body .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .program-card .card-title {
+        margin-bottom: 1rem !important;
+        text-align: center;
+    }
+    
+    .program-card .d-flex.align-items-center {
+        gap: 0.5rem;
+    }
+    
+    .program-card .form-control-sm {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    .program-card .btn-sm {
+        width: 100%;
+        margin: 0.25rem 0 !important;
+    }
+}
 </style>
 
 <div class="container mt-4">
@@ -189,15 +284,16 @@
                 <div id="active-programs">
                     {% if current_user.is_authenticated %}
                         {% for program in points_programs %}
-                        <div class="card mb-2 program-card" data-id="{{ program.id }}">
+                        <div class="card program-card" data-id="{{ program.id }}">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">{{ program.program_name }}</h5>
-                                    <div class="d-flex align-items-center">
-                                        <input type="number" class="form-control form-control-sm points-balance me-2" 
-                                               value="{{ program.points_balance }}" style="width: 120px;">
-                                        <button class="btn btn-sm btn-primary update-points me-2">Update</button>
-                                        <button class="btn btn-sm btn-danger delete-program">Delete</button>
+                                <h5 class="card-title">{{ program.program_name }}</h5>
+                                <div class="points-input-group">
+                                    <input type="number" 
+                                           class="form-control" 
+                                           value="{{ program.points_balance }}">
+                                    <div class="button-group">
+                                        <button class="btn btn-primary update-points">Update</button>
+                                        <button class="btn btn-danger delete-program">Delete</button>
                                     </div>
                                 </div>
                             </div>

@@ -1,0 +1,46 @@
+/* Mobile-first responsive styles */
+.program-card {
+    margin-bottom: 1rem;
+}
+
+.program-card .card-body {
+    padding: 1rem;
+}
+
+.program-card .card-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.program-card .points-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.program-card .form-control {
+    width: 100%;
+    height: 38px;
+    font-size: 1rem;
+}
+
+.program-card .button-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.program-card .btn {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* Ensure container is not too wide on mobile */
+@media (max-width: 768px) {
+    .container {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

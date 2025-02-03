@@ -168,12 +168,20 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Response status:', response.status);
             console.log('Response ok:', response.ok);
             
+            if (!response.ok) {
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const data = await response.json();
+                    throw new Error(data.message || data.error || 'Failed to generate trip');
+                } else {
+                    const text = await response.text();
+                    console.error('Non-JSON error response:', text);
+                    throw new Error('Server error occurred. Please try again.');
+                }
+            }
+            
             const data = await response.json();
             console.log('Response data:', data);
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to generate trip');
-            }
             
             // Update results container
             displayTripResults(data);
@@ -183,7 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const resultsContainer = document.getElementById('trip-results');
             resultsContainer.innerHTML = `
                 <div class="alert alert-danger">
-                    <strong>Error:</strong> ${error.message || 'An unexpected error occurred'}
+                    <strong>Error:</strong> ${error.message || 'An unexpected error occurred. Please try again.'}
+                    ${error.message.includes('login') ? '<br><a href="/login" class="alert-link">Click here to log in</a>' : ''}
                 </div>
             `;
         } finally {
