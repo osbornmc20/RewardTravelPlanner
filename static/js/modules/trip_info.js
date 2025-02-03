@@ -38,8 +38,7 @@ const TripInfo = {
         const maxFlightLength = parseInt($('#maxFlightLength').val(), 10);
         
         const tripInfo = {
-            start_date: $('#startDate').val(),
-            end_date: $('#endDate').val(),
+            travel_months: $('#travelMonths').val(),
             trip_length: isNaN(tripLength) ? null : tripLength,
             max_flight_length: isNaN(maxFlightLength) ? null : maxFlightLength,
             direct_flights: $('#directFlights').is(':checked'),
@@ -54,8 +53,7 @@ const TripInfo = {
         const errors = [];
 
         // Required fields
-        if (!info.start_date) errors.push('Start date is required');
-        if (!info.end_date) errors.push('End date is required');
+        if (!info.travel_months) errors.push('Preferred travel months are required');
         if (!info.trip_length) errors.push('Trip length is required');
         if (!info.max_flight_length) errors.push('Maximum flight length is required');
 
@@ -65,13 +63,6 @@ const TripInfo = {
         }
         if (info.max_flight_length && (isNaN(info.max_flight_length) || info.max_flight_length <= 0)) {
             errors.push('Maximum flight length must be a positive number');
-        }
-
-        // Date validation
-        const start = new Date(info.start_date);
-        const end = new Date(info.end_date);
-        if (start && end && start > end) {
-            errors.push('End date must be after start date');
         }
 
         console.log('Trip info validation results:', { info, errors });

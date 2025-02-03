@@ -9,8 +9,10 @@
                 <div class="col-md-6">
                     <label for="travelMonths" class="form-label">Preferred Travel Months</label>
                     <input type="text" class="form-control" id="travelMonths" required 
-                           placeholder="e.g., June-August 2025">
-                    <div class="invalid-feedback">Please enter preferred travel months</div>
+                           placeholder="e.g., June-August 2025"
+                           pattern="^[A-Za-z]+(-[A-Za-z]+)?\s+\d{4}$"
+                           title="Please enter month or month range followed by year (e.g., June 2025 or June-August 2025)">
+                    <div class="invalid-feedback">Please enter preferred travel months (e.g., June 2025 or June-August 2025)</div>
                 </div>
                 <div class="col-md-6">
                     <label for="tripLength" class="form-label">Trip Length (days)</label>
