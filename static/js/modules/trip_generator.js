@@ -56,9 +56,14 @@ const TripGenerator = {
             
             // Collect and validate data from all modules
             const tripInfo = TripInfo.getTripInfo();
+            const pointsPrograms = await fetch('/points/list')
+                .then(response => response.json())
+                .then(data => data.programs || []);
+
             const tripData = {
                 trip_types: tripTypes,
                 airports: airports,
+                points_programs: pointsPrograms,
                 ...tripInfo
             };
 
@@ -88,26 +93,33 @@ const TripGenerator = {
             body: JSON.stringify(tripData)
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
+        // First check if response is ok
+        if (!response.ok) {
+            // For non-200 responses, try to get error details
+            try {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to generate trip');
+            } catch (jsonError) {
+                // If we can't parse JSON, get the text
+                const text = await response.text();
+                // Check if it's an HTML response (indicating a server error)
+                if (text.includes('<!DOCTYPE html>')) {
+                    throw new Error('Server error occurred. Please try again.');
+                }
+                throw new Error('Failed to generate trip. Please try again.');
+            }
+        }
 
-        // Clone response before reading
-        const responseClone = response.clone();
-        
+        // For 200 responses, try to parse JSON
         try {
             const data = await response.json();
-            console.log('Response data:', data);
-            
-            if (!response.ok || !data.success) {
+            if (!data.success) {
                 throw new Error(data.error || 'Failed to generate trip');
             }
-            
             return data;
         } catch (jsonError) {
             console.error('JSON parsing error:', jsonError);
-            const text = await responseClone.text();
-            console.error('Response text:', text);
-            throw new Error('Error generating trip. Please try again.');
+            throw new Error('Error processing server response. Please try again.');
         }
     },
 

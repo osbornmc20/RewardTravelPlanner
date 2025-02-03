@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 import json
-from openai import OpenAI
+from openai import OpenAI, RateLimitError, APIError, APIConnectionError
 from models import db, User, PointsProgram
 from services.ai_service import TravelPlanGenerator
 
@@ -283,8 +283,31 @@ def generate_trip():
         try:
             # Generate the travel plan
             result = travel_planner.generate_travel_plan(data)
+            
+            # Validate the result
+            if not isinstance(result, dict):
+                return jsonify({
+                    'success': False,
+                    'error': 'Invalid response format from AI service'
+                }), 500
+                
             return jsonify(result)
             
+        except RateLimitError:
+            return jsonify({
+                'success': False,
+                'error': 'Service is currently busy. Please try again in a few moments.'
+            }), 429
+        except APIError:
+            return jsonify({
+                'success': False,
+                'error': 'Service temporarily unavailable. Please try again.'
+            }), 503
+        except APIConnectionError:
+            return jsonify({
+                'success': False,
+                'error': 'Unable to connect to service. Please check your internet connection.'
+            }), 503
         except Exception as e:
             print(f"Error generating travel plan: {str(e)}")
             return jsonify({
@@ -335,4 +358,4 @@ def test_static():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5035)
+    app.run(debug=True, port=5037)

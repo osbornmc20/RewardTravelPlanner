@@ -24,6 +24,8 @@ class TravelPlanGenerator:
     def _get_system_prompt(self, trip_data: Dict) -> str:
         """Construct the system prompt for the GPT model."""
         points_balances = {}
+        
+        # Get points balances from database for authenticated users
         if current_user.is_authenticated:
             try:
                 points_balances = {
@@ -33,7 +35,17 @@ class TravelPlanGenerator:
             except Exception as e:
                 print(f"Error getting points from database: {e}")
                 points_balances = {}
-
+        # Get points balances from trip data for anonymous users
+        else:
+            try:
+                points_balances = {
+                    program['program_name']: program['points_balance']
+                    for program in trip_data.get('points_programs', [])
+                }
+            except Exception as e:
+                print(f"Error getting points from trip data: {e}")
+                points_balances = {}
+                
         special_requests = trip_data.get('preferences', 'None specified').strip()
         special_requests_emphasis = f"""
 ⚠️ SPECIAL REQUESTS (PRIME DIRECTIVE - MUST BE FOLLOWED) ⚠️
