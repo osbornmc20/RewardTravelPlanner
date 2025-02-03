@@ -147,10 +147,28 @@ const TripGenerator = {
     },
 
     setGeneratingState(isGenerating) {
-        this.generateButton.disabled = isGenerating;
-        this.generateButton.innerHTML = isGenerating ? 
-            '<i class="fas fa-spinner fa-spin me-2"></i>Generating...' : 
-            'Generate Trip Ideas';
+        const button = this.generateButton;
+        const spinner = button.querySelector('.spinner-border');
+        
+        if (isGenerating) {
+            button.disabled = true;
+            spinner.classList.remove('d-none');
+            button.innerHTML = `
+                Marshall Is Thinking...
+                <div class="spinner-border spinner-border-sm ms-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            `;
+        } else {
+            button.disabled = false;
+            spinner.classList.add('d-none');
+            button.innerHTML = `
+                Ask Marshall
+                <div class="spinner-border spinner-border-sm ms-2 d-none" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            `;
+        }
     },
 
     async handleTripResponse(data) {
@@ -170,7 +188,7 @@ const TripGenerator = {
         let resultsHtml = '<div class="trip-results-container">';
         
         destinations.forEach((destination, index) => {
-            // Extract destination header and preference match
+            // Extract destination header and summary sections
             const lines = destination.split('\n').map(l => l.trim()).filter(l => l);
             const destName = lines[0].replace(':', '').trim();
             
@@ -180,14 +198,30 @@ const TripGenerator = {
                 return;
             }
             
-            let prefMatch = '';
+            // Find destination summary and recommendations sections
+            const summaryStartIndex = lines.findIndex(l => l === 'DESTINATION SUMMARY:');
+            const recommendationsStartIndex = lines.findIndex(l => l === 'Why We Recommend This Destination:');
+            const optionsStartIndex = lines.findIndex(l => l.includes('OPTION A - ECONOMY EXPERIENCE'));
+            
+            let destinationSummary = '';
+            let recommendations = '';
             let content = destination;
             
-            // Find preference match section
-            const prefMatchIndex = lines.findIndex(l => l.startsWith('Preference Match:'));
-            if (prefMatchIndex !== -1) {
-                prefMatch = lines[prefMatchIndex].replace('Preference Match:', '').trim();
-                content = lines.slice(prefMatchIndex + 1).join('\n');
+            if (summaryStartIndex !== -1 && recommendationsStartIndex !== -1) {
+                // Extract summary
+                destinationSummary = lines
+                    .slice(summaryStartIndex + 1, recommendationsStartIndex)
+                    .filter(l => l)
+                    .join('<br>');
+                
+                // Extract recommendations
+                recommendations = lines
+                    .slice(recommendationsStartIndex + 1, optionsStartIndex)
+                    .filter(l => l)
+                    .join('<br>');
+                
+                // Get the rest of the content
+                content = lines.slice(optionsStartIndex).join('\n');
             }
 
             // Split into economy and luxury options
@@ -197,9 +231,32 @@ const TripGenerator = {
             if (economySection && luxurySection && destName !== 'Unknown Destination') {
                 resultsHtml += `
                     <div class="destination-section mb-5">
-                        <h2 class="destination-header mb-3">Destination ${index + 1} - ${destName}</h2>
-                        <div class="preference-match mb-3">
-                            <strong>Preference Match:</strong> ${prefMatch}
+                        <h2 class="destination-header mb-4">Destination ${index + 1} - ${destName}</h2>
+                        
+                        <div class="destination-summary mb-4">
+                            <div class="summary-section mb-4">
+                                <h4 class="summary-title">Overview</h4>
+                                <div class="summary-content">
+                                    ${destinationSummary}
+                                </div>
+                            </div>
+                            
+                            <div class="recommendations-section">
+                                <h4 class="summary-title">Why We Recommend This Destination</h4>
+                                <div class="recommendations-content">
+                                    ${recommendations.split('<br>').map(rec => {
+                                        // Check if it's a main section header (ends with ':')
+                                        if (rec.endsWith(':')) {
+                                            return `<h5 class="recommendation-category">${rec}</h5>`;
+                                        }
+                                        // Check if it's a bullet point
+                                        else if (rec.startsWith('-')) {
+                                            return `<div class="recommendation-item">${rec.substring(1)}</div>`;
+                                        }
+                                        return rec;
+                                    }).join('')}
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="row">
@@ -245,32 +302,80 @@ const TripGenerator = {
                 color: #2c3e50;
                 border-bottom: 2px solid #3498db;
                 padding-bottom: 10px;
+                font-size: 2rem;
             }
-            .preference-match {
+            .destination-summary {
                 background-color: #f8f9fa;
-                padding: 15px;
-                border-radius: 5px;
+                padding: 25px;
+                border-radius: 8px;
                 border-left: 4px solid #3498db;
+                margin-bottom: 30px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .summary-section, .recommendations-section {
+                margin-bottom: 20px;
+            }
+            .summary-title {
+                color: #2c3e50;
+                margin-bottom: 15px;
+                font-size: 1.3rem;
+                font-weight: 600;
+                border-bottom: 1px solid #e9ecef;
+                padding-bottom: 8px;
+            }
+            .summary-content {
+                color: #444;
+                line-height: 1.6;
+                font-size: 1.1rem;
+            }
+            .recommendation-category {
+                color: #2c3e50;
+                margin: 15px 0 10px 0;
+                font-size: 1.1rem;
+                font-weight: 600;
+            }
+            .recommendation-item {
+                color: #444;
+                margin: 8px 0 8px 15px;
+                position: relative;
+                line-height: 1.5;
+            }
+            .recommendation-item::before {
+                content: "•";
+                color: #3498db;
+                position: absolute;
+                left: -15px;
+            }
+            .recommendations-content {
+                background-color: white;
+                padding: 15px;
+                border-radius: 6px;
+                border: 1px solid #e9ecef;
             }
             .option-section {
                 margin-bottom: 20px;
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
             .option-header {
                 color: #2c3e50;
                 font-size: 1.5rem;
-                margin-bottom: 15px;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #3498db;
             }
             .detail-box {
                 background-color: white;
-                border: 2px solid #3498db;
-                border-radius: 5px;
-                padding: 15px;
+                border: 1px solid #e9ecef;
+                border-radius: 6px;
+                padding: 20px;
                 margin-bottom: 15px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
             .detail-box h4 {
                 color: #3498db;
-                margin-bottom: 10px;
+                margin-bottom: 12px;
                 font-size: 1.2rem;
             }
             .detail-box ul {
@@ -279,9 +384,10 @@ const TripGenerator = {
                 margin-bottom: 0;
             }
             .detail-box li {
-                margin-bottom: 5px;
+                margin-bottom: 8px;
                 padding-left: 20px;
                 position: relative;
+                line-height: 1.5;
             }
             .detail-box li:before {
                 content: "•";

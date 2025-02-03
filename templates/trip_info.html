@@ -7,29 +7,27 @@
         <form id="tripInfoForm" class="needs-validation" novalidate>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label for="startDate" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="startDate" required min="{{ today }}">
-                    <div class="invalid-feedback">Please select a valid start date</div>
+                    <label for="travelMonths" class="form-label">Preferred Travel Months</label>
+                    <input type="text" class="form-control" id="travelMonths" required 
+                           placeholder="e.g., June-August 2025">
+                    <div class="invalid-feedback">Please enter preferred travel months</div>
                 </div>
-                <div class="col-md-6">
-                    <label for="endDate" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="endDate" required min="{{ today }}">
-                    <div class="invalid-feedback">End date must be after start date</div>
-                </div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="tripLength" class="form-label">Trip Length (days)</label>
-                    <input type="number" class="form-control" id="tripLength" name="tripLength" min="1" max="30" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="maxFlightLength" class="form-label">Max Flight Length (hours)</label>
-                    <input type="number" class="form-control" id="maxFlightLength" name="maxFlightLength" min="1" max="24" required>
+                    <input type="number" class="form-control" id="tripLength" name="tripLength" 
+                           min="1" max="30" required>
+                    <div class="invalid-feedback">Please enter a trip length between 1 and 30 days</div>
                 </div>
             </div>
-            <div class="row mb-3">
-                <div class="col-12">
-                    <div class="form-check">
+            <div class="row mb-3 mt-3">
+                <div class="col-md-6">
+                    <label for="maxFlightLength" class="form-label">Max Flight Length (hours)</label>
+                    <input type="number" class="form-control" id="maxFlightLength" name="maxFlightLength" 
+                           min="1" max="24" required>
+                    <div class="invalid-feedback">Please enter a flight length between 1 and 24 hours</div>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="directFlights" name="directFlights">
                         <label class="form-check-label" for="directFlights">Direct Flights Only</label>
                     </div>
@@ -42,16 +40,20 @@
                     <label for="specialRequests" class="form-label">Special Requests & Preferences</label>
                     <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3" 
                         placeholder="Enter any specific requests, preferences, or things to avoid. For example:
-- Only show me European destinations
-- I prefer boutique hotels
-- No layovers longer than 3 hours"></textarea>
+- Only show European destinations
+- Must have beach access
+- Avoid cold weather
+- Include cultural activities"></textarea>
                 </div>
             </div>
         </form>
         
-        <div class="text-center mt-4">
-            <button type="button" class="btn btn-primary btn-lg" id="generateTripIdeas">
-                <i class="fas fa-plane-departure me-2"></i>Generate Trip Ideas
+        <div class="col-12 text-center mt-4">
+            <button id="generateTripIdeas" class="btn btn-primary btn-lg">
+                Ask Marshall
+                <div class="spinner-border spinner-border-sm ms-2 d-none" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </button>
         </div>
         

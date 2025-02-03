@@ -78,7 +78,7 @@ AVAILABLE POINTS:
 TRIP REQUIREMENTS:
 - Departure Airport(s): {', '.join(trip_data['airports'])}
 - Trip Style: {', '.join(trip_data['trip_types'])}
-- Travel Dates: {trip_data['start_date']} to {trip_data['end_date']} ({trip_data['trip_length']} days)
+- Preferred Travel Time: {trip_data['travel_months']} ({trip_data['trip_length']} days)
 - Maximum Flight Length: {trip_data['max_flight_length']} hours
 - Direct Flights Only: {'Yes' if trip_data.get('direct_flights') else 'No'}
 
@@ -93,6 +93,11 @@ CRITICAL REQUIREMENTS:
 8. ALWAYS show exactly 3 destinations, numbered 1, 2, and 3
 9. ALL point calculations must be for ROUND TRIP flights PER PERSON
 10. NEVER exceed available point balances
+11. Consider seasonal factors for each destination:
+    - Weather patterns and best times to visit
+    - Peak vs. off-peak travel seasons
+    - Local festivals and events
+    - Typical award availability patterns
 
 POINTS USAGE PRIORITY (STRICT ORDER):
 1. Direct Hotel/Airline Program Points
@@ -112,7 +117,23 @@ POINT VALUES (cpp):
 
 START YOUR RESPONSE WITH THE FOLLOWING FORMAT EXACTLY:
 DESTINATION 1 - [City, Country]:
-Preference Match: [Brief explanation of how this matches ALL special requests and preferences]
+
+DESTINATION SUMMARY:
+[2-3 sentences about why this destination is an excellent match for the requested travel time and trip style]
+
+Why We Recommend This Destination:
+1. Your Requirements: 
+   - [List how this matches each of the user's special requests]
+   - [Address any specific preferences mentioned]
+
+2. Seasonal Sweet Spot:
+   - Weather: [Current season's weather patterns and why they're ideal]
+   - Local Events: [Key festivals, events, or activities during these months]
+   
+3. Points Strategy:
+   - Award Availability: [Current patterns for this route/destination]
+   - Peak/Off-Peak: [How timing affects point redemptions]
+   - Special Opportunities: [Any point transfer bonuses or sweet spot redemptions]
 
 OPTION A - ECONOMY EXPERIENCE
 Flight Details:
@@ -121,6 +142,7 @@ Flight Details:
 - Points Program: [Program name]
 - Points Used: [X points round trip per person]
 - Fare Type: Economy
+- Award Availability: [Typical availability for these months]
 
 Hotel Option:
 - Property: [Hotel name]
@@ -142,6 +164,7 @@ Flight Details:
 - Points Program: [Program name]
 - Points Used: [X points round trip per person]
 - Fare Type: [Premium Economy/Business/First]
+- Award Availability: [Typical availability for these months]
 
 Hotel Option:
 - Property: [Luxury hotel name]
@@ -162,9 +185,10 @@ IMPORTANT FORMATTING NOTES:
 1. Do NOT use any markdown formatting (no **, *, or other symbols)
 2. Use plain text only
 3. Keep the exact section headers as shown
-4. Include Preference Match for EVERY destination
+4. ALWAYS include the full DESTINATION SUMMARY and Why We Recommend This Destination sections
 5. Always show points as "round trip per person" for flights
-6. Start IMMEDIATELY with "DESTINATION 1" - no introduction or preamble"""
+6. Start IMMEDIATELY with "DESTINATION 1" - no introduction or preamble
+7. Make sure each destination recommendation addresses ALL user requirements"""
 
     def _format_points_balances(self, points_balances):
         """Format points balances into a readable string."""
