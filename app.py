@@ -7,6 +7,9 @@ import requests
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, AnonymousUserMixin
 from models import db, User, PointsProgram, Airport
 from services.ai_service import TravelPlanGenerator
+from sqlalchemy import create_engine
+from sqlalchemy.pool import QueuePool
+import time
 
 # Load environment variables
 load_dotenv()
@@ -14,10 +17,29 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
 
-# Database configuration
+# Database configuration with connection pooling
 if os.getenv('RENDER'):
     # Production database (PostgreSQL on Render)
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://')
+    db_url = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://')
+    engine = create_engine(
+        db_url,
+        poolclass=QueuePool,
+        pool_size=5,  # Conservative pool size
+        max_overflow=5,  # Limited overflow
+        pool_timeout=30,
+        pool_pre_ping=True,  # Verify connection before using
+        pool_recycle=1800,  # Recycle connections every 30 minutes
+        pool_use_lifo=True  # Last In First Out for better performance
+    )
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 5,
+        'max_overflow': 5,
+        'pool_timeout': 30,
+        'pool_pre_ping': True,
+        'pool_recycle': 1800,
+        'pool_use_lifo': True
+    }
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 else:
     # Local database (SQLite)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///points_tracker.db'
@@ -26,15 +48,35 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
 db.init_app(app)
-with app.app_context():
-    db.create_all()
-    # Check if we need to populate airports
-    if Airport.query.count() == 0:
+
+def init_db():
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
         try:
-            from populate_airports import populate_airports
-            populate_airports()
+            with app.app_context():
+                db.create_all()
+                # Check if we need to populate airports
+                if Airport.query.count() == 0:
+                    try:
+                        from populate_airports import populate_airports
+                        populate_airports()
+                    except Exception as e:
+                        print(f"Error populating airports: {e}")
+            return  # Success, exit the function
         except Exception as e:
-            print(f"Error populating airports: {e}")
+            if attempt < max_retries - 1:  # Don't sleep on the last attempt
+                print(f"Database initialization attempt {attempt + 1} failed: {e}")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                print(f"Final database initialization attempt failed: {e}")
+                raise
+
+# Initialize database with retry logic
+init_db()
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
