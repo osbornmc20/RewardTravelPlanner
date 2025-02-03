@@ -26,6 +26,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
 db.init_app(app)
+with app.app_context():
+    db.create_all()
+    # Check if we need to populate airports
+    if Airport.query.count() == 0:
+        try:
+            from populate_airports import populate_airports
+            populate_airports()
+        except Exception as e:
+            print(f"Error populating airports: {e}")
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -475,11 +484,5 @@ def test_static():
         'css_path': url_for('static', filename='css/trip_planner.css')
     })
 
-# Create database tables
-def init_db():
-    with app.app_context():
-        db.create_all()
-
 if __name__ == '__main__':
-    init_db()  # Initialize database tables
     app.run(debug=True, port=5030)
