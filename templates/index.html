@@ -1,206 +1,52 @@
 {% extends "base.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/trip_results.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-{% endblock %}
-
-{% block content %}
 <style>
 .trip-type-box {
     border: 2px solid #0d6efd;
     border-radius: 8px;
     padding: 15px;
-    margin-bottom: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.trip-type-box:hover {
+.trip-type-box:not(.disabled):hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
 }
 
 .trip-type-box.selected {
-    background-color: #0d6efd;
-    color: white;
-}
-
-.trip-type-box i {
-    font-size: 24px;
-    margin-bottom: 10px;
-    display: block;
+    background-color: #0d6efd !important;
+    color: white !important;
 }
 
 .trip-type-box.disabled {
     opacity: 0.5;
     cursor: not-allowed;
     border-color: #dee2e6;
+    pointer-events: none;
 }
 
-.trip-type-box.disabled:hover {
-    transform: none;
-    box-shadow: none;
+.trip-type-box i {
+    font-size: 24px;
+    margin-bottom: 10px;
 }
 
-.airport-suggestions {
-    position: absolute;
-    width: 100%;
-    max-height: 200px;
-    overflow-y: auto;
-    background: white;
-    border: 1px solid #ced4da;
-    border-radius: 0 0 4px 4px;
-    z-index: 1000;
-    display: none;
-}
-
-.airport-suggestion {
-    padding: 8px 12px;
-    cursor: pointer;
-}
-
-.airport-suggestion:hover {
-    background-color: #f8f9fa;
-}
-
-.airport-input-group {
-    position: relative;
-    margin-bottom: 1rem;
-}
-
-/* Airport Suggestions */
-.airport-input-group {
-    position: relative;
-}
-
-.airport-suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.suggestion {
-    padding: 8px 12px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.suggestion:hover {
-    background-color: #f8f9fa;
-}
-
-.suggestion:last-child {
-    border-bottom: none;
-}
-
-/* Enhanced responsive styles for points program cards */
-@media (max-width: 768px) {
-    #active-programs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        padding: 0.5rem;
-    }
-
-    .program-card {
-        flex: 1 1 300px;
-        margin: 0 !important;
-    }
-
-    .program-card .card-body {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        padding: 1rem;
-    }
-
-    .program-card .card-title {
-        font-size: 1.1rem;
-        margin: 0 !important;
-        text-align: left;
-    }
-
-    .program-card .points-display {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .program-card .points-balance {
-        flex: 1;
-        min-width: 100px;
-        height: 38px;
-        font-size: 1rem;
-    }
-
-    .program-card .btn-group {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .program-card .btn {
-        flex: 1;
-        padding: 0.375rem 0.75rem;
-        font-size: 0.9rem;
-    }
-}
-
-/* Extra small devices */
-@media (max-width: 576px) {
-    .program-card {
-        flex: 1 1 100%;
-    }
-
-    .program-card .card-body {
-        padding: 0.75rem;
-    }
-
-    .program-card .btn {
-        padding: 0.5rem;
-    }
-}
-
-/* Responsive styles for points program cards */
-@media (max-width: 768px) {
-    .program-card .card-body .d-flex {
-        flex-direction: column;
-        align-items: stretch !important;
-    }
-    
-    .program-card .card-title {
-        margin-bottom: 1rem !important;
-        text-align: center;
-    }
-    
-    .program-card .d-flex.align-items-center {
-        gap: 0.5rem;
-    }
-    
-    .program-card .form-control-sm {
-        width: 100% !important;
-        margin-bottom: 0.5rem;
-    }
-    
-    .program-card .btn-sm {
-        width: 100%;
-        margin: 0.25rem 0 !important;
-    }
+.trip-type-box h5 {
+    margin: 0;
 }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="container mt-4">
     <!-- Points Programs Section -->
     <div class="card mb-4">
@@ -209,70 +55,71 @@
         </div>
         <div class="card-body">
             <!-- Add New Program Section -->
-            <div class="accordion" id="loyaltyProgramAccordion">
+            <div class="accordion" id="add-program-accordion">
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#addProgramCollapse">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#add-program-collapse">
                             Add New Program
                         </button>
                     </h2>
-                    <div id="addProgramCollapse" class="accordion-collapse collapse">
+                    <div id="add-program-collapse" class="accordion-collapse collapse" data-bs-parent="#add-program-accordion">
                         <div class="accordion-body">
-                            <div class="mb-3">
-                                <label class="form-label">Select Program Type</label>
-                                <select class="form-select" id="programType">
-                                    <option value="">Choose program type...</option>
-                                    <option value="airline">Airlines</option>
-                                    <option value="hotel">Hotels</option>
-                                    <option value="creditcard">Credit Cards</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Airline Programs -->
-                            <div class="mb-3 program-select" id="airlineSelect" style="display: none;">
-                                <label class="form-label">Select Airline Program</label>
-                                <select class="form-select" id="airlineProgram">
-                                    <option value="">Choose airline program...</option>
-                                    <option value="United MileagePlus">United MileagePlus</option>
-                                    <option value="American AAdvantage">American AAdvantage</option>
-                                    <option value="Delta SkyMiles">Delta SkyMiles</option>
-                                    <option value="Southwest Rapid Rewards">Southwest Rapid Rewards</option>
-                                    <option value="Alaska Mileage Plan">Alaska Mileage Plan</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Hotel Programs -->
-                            <div class="mb-3 program-select" id="hotelSelect" style="display: none;">
-                                <label class="form-label">Select Hotel Program</label>
-                                <select class="form-select" id="hotelProgram">
-                                    <option value="">Choose hotel program...</option>
-                                    <option value="Marriott Bonvoy">Marriott Bonvoy</option>
-                                    <option value="Hilton Honors">Hilton Honors</option>
-                                    <option value="World of Hyatt">World of Hyatt</option>
-                                    <option value="IHG One Rewards">IHG One Rewards</option>
-                                    <option value="Wyndham Rewards">Wyndham Rewards</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Credit Card Programs -->
-                            <div class="mb-3 program-select" id="creditcardSelect" style="display: none;">
-                                <label class="form-label">Select Credit Card Program</label>
-                                <select class="form-select" id="creditcardProgram">
-                                    <option value="">Choose credit card program...</option>
-                                    <option value="Chase Ultimate Rewards">Chase Ultimate Rewards</option>
-                                    <option value="American Express Membership Rewards">American Express Membership Rewards</option>
-                                    <option value="Citi ThankYou Points">Citi ThankYou Points</option>
-                                    <option value="Capital One Miles">Capital One Miles</option>
-                                    <option value="Discover Rewards">Discover Rewards</option>
-                                </select>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Points Balance</label>
-                                <input type="number" class="form-control" id="pointsBalance" min="0">
-                            </div>
-                            
-                            <button id="addProgram" class="btn btn-primary">Add Program</button>
+                            <form id="add-program-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Select Program Type</label>
+                                    <select class="form-select" id="programType" required>
+                                        <option value="">Choose program type...</option>
+                                        <option value="airline">Airline Program</option>
+                                        <option value="hotel">Hotel Program</option>
+                                        <option value="creditcard">Credit Card Program</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Airline Programs -->
+                                <div class="mb-3 program-select" id="airlineSelect">
+                                    <label class="form-label">Select Airline Program</label>
+                                    <select class="form-select" id="airlineProgram">
+                                        <option value="">Choose airline program...</option>
+                                        <option value="United MileagePlus">United MileagePlus</option>
+                                        <option value="American AAdvantage">American AAdvantage</option>
+                                        <option value="Delta SkyMiles">Delta SkyMiles</option>
+                                        <option value="Southwest Rapid Rewards">Southwest Rapid Rewards</option>
+                                        <option value="Alaska Mileage Plan">Alaska Mileage Plan</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Hotel Programs -->
+                                <div class="mb-3 program-select" id="hotelSelect">
+                                    <label class="form-label">Select Hotel Program</label>
+                                    <select class="form-select" id="hotelProgram">
+                                        <option value="">Choose hotel program...</option>
+                                        <option value="Marriott Bonvoy">Marriott Bonvoy</option>
+                                        <option value="Hilton Honors">Hilton Honors</option>
+                                        <option value="World of Hyatt">World of Hyatt</option>
+                                        <option value="IHG One Rewards">IHG One Rewards</option>
+                                        <option value="Wyndham Rewards">Wyndham Rewards</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Credit Card Programs -->
+                                <div class="mb-3 program-select" id="creditCardSelect" style="display: none;">
+                                    <label class="form-label">Select Credit Card Program</label>
+                                    <select class="form-select" id="creditCardProgram">
+                                        <option value="">Choose credit card program...</option>
+                                        <option value="Chase Ultimate Rewards">Chase Ultimate Rewards</option>
+                                        <option value="American Express Membership Rewards">American Express Membership Rewards</option>
+                                        <option value="Citi ThankYou Points">Citi ThankYou Points</option>
+                                        <option value="Capital One Miles">Capital One Miles</option>
+                                        <option value="Discover Rewards">Discover Rewards</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="points-balance" class="form-label">Points Balance</label>
+                                    <input type="number" class="form-control" id="points-balance" name="points_balance" required min="0">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Program</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -281,30 +128,30 @@
             <!-- Active Programs Section -->
             <div class="mt-4">
                 <h4>Active Loyalty Programs</h4>
-                <div id="active-programs" class="d-flex flex-column gap-3">
-                    {% if current_user.is_authenticated %}
-                        {% for program in points_programs %}
-                        <div class="card program-card" data-id="{{ program.id }}">
-                            <div class="card-body">
-                                <h5 class="card-title text-wrap">{{ program.program_name }}</h5>
-                                <div class="points-input-group">
-                                    <input type="number" 
-                                           class="form-control" 
-                                           value="{{ program.points_balance }}"
-                                           aria-label="Points balance">
-                                    <div class="button-group d-flex gap-2">
-                                        <button class="btn btn-primary update-points d-flex align-items-center justify-content-center">
-                                            <span>Update</span>
-                                        </button>
-                                        <button class="btn btn-danger delete-program d-flex align-items-center justify-content-center">
-                                            <span>Delete</span>
-                                        </button>
+                <div class="row g-3">
+                    {% for program in points_programs %}
+                    <div class="col-12 col-md-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-3">{{ program.program_name }}</h5>
+                                <p class="text-muted">{{ program.program_type|title }} Program</p>
+                                <div class="points-input-group mt-auto">
+                                    <div class="mb-3">
+                                        <input type="number" 
+                                               class="form-control points-input" 
+                                               value="{{ program.points_balance }}"
+                                               data-program-id="{{ program.id }}"
+                                               aria-label="Points balance">
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary flex-grow-1 update-points">Update</button>
+                                        <button class="btn btn-danger flex-grow-1 delete-program" data-program-id="{{ program.id }}">Delete</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    {% endif %}
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -364,4 +211,13 @@
 
 {% endblock %}
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(() => {
+    TripTypes.init();
+    DepartingAirports.init();
+    TripInfo.init();
+    TripGenerator.init();
+});
+</script>
+{% endblock %}

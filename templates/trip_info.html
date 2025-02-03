@@ -8,12 +8,12 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="startDate" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="startDate" required>
+                    <input type="date" class="form-control" id="startDate" required min="{{ today }}">
                     <div class="invalid-feedback">Please select a valid start date</div>
                 </div>
                 <div class="col-md-6">
                     <label for="endDate" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="endDate" required>
+                    <input type="date" class="form-control" id="endDate" required min="{{ today }}">
                     <div class="invalid-feedback">End date must be after start date</div>
                 </div>
             </div>
@@ -39,13 +39,12 @@
             <!-- User Preferences Section -->
             <div class="row mb-3">
                 <div class="col-12">
-                    <label for="userPreferences" class="form-label">Special Requests & Preferences</label>
-                    <textarea class="form-control" id="userPreferences" name="userPreferences" rows="3" 
+                    <label for="specialRequests" class="form-label">Special Requests & Preferences</label>
+                    <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3" 
                         placeholder="Enter any specific requests, preferences, or things to avoid. For example:
+- Only show me European destinations
 - I prefer boutique hotels
-- I want to avoid tourist traps
-- I'm interested in local food markets
-- I need wheelchair accessibility"></textarea>
+- No layovers longer than 3 hours"></textarea>
                 </div>
             </div>
         </form>
