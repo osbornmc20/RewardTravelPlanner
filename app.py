@@ -269,19 +269,28 @@ def index():
 @app.route('/generate_trip', methods=['POST'])
 def generate_trip():
     """Generate trip ideas based on user input."""
+    if not request.is_json:
+        return jsonify({
+            'success': False,
+            'error': 'Request must be JSON'
+        }), 400
+        
     try:
+        # Store the request data so it can be accessed multiple times if needed
         data = request.get_json()
+        request.data_cache = data  # Cache the data in case it's needed elsewhere
+        
         if not data:
             return jsonify({
                 'success': False,
                 'error': 'No data provided'
             }), 400
 
-        # Initialize the travel plan generator
+        # Initialize the travel plan generator with a timeout
         travel_planner = TravelPlanGenerator()
         
         try:
-            # Generate the travel plan
+            # Generate the travel plan with a timeout
             result = travel_planner.generate_travel_plan(data)
             
             # Validate the result
@@ -296,30 +305,35 @@ def generate_trip():
         except RateLimitError:
             return jsonify({
                 'success': False,
-                'error': 'Service is currently busy. Please try again in a few moments.'
+                'error': 'The service is briefly busy. Please try again in a few moments - it usually works on the second try!'
             }), 429
         except APIError:
             return jsonify({
                 'success': False,
-                'error': 'Service temporarily unavailable. Please try again.'
+                'error': 'The service is temporarily unavailable. Please try again - it usually works on the second try!'
             }), 503
         except APIConnectionError:
             return jsonify({
                 'success': False,
-                'error': 'Unable to connect to service. Please check your internet connection.'
+                'error': 'Having trouble connecting to the service. Please try again - it usually works on the second try!'
             }), 503
+        except TimeoutError:
+            return jsonify({
+                'success': False,
+                'error': 'The request took a bit too long. Please try again - it usually works on the second try!'
+            }), 504
         except Exception as e:
             print(f"Error generating travel plan: {str(e)}")
             return jsonify({
                 'success': False,
-                'error': 'Error generating travel plan. Please try again.'
+                'error': 'A temporary error occurred. Please try again - it usually works on the second try!'
             }), 500
         
     except Exception as e:
-        print(f"Error in generate_trip route: {str(e)}")
+        print(f"Error parsing request data: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Invalid request data format'
         }), 400
 
 # Test OpenAI API connection

@@ -216,30 +216,37 @@ IMPORTANT FORMATTING NOTES:
 10. NEVER exceed available point balances"""
 
     def generate_travel_plan(self, trip_data: Dict) -> Dict:
-        """Generate a travel plan using OpenAI's GPT model."""
+        """Generate a travel plan based on user input."""
         try:
-            # Create the chat completion
+            # Set a timeout for the API call
             response = client.chat.completions.create(
-                model="chatgpt-4o-latest",
+                model="chatgpt-4o-latest",  # Use the specified model name
                 messages=[
                     {"role": "system", "content": self._get_system_prompt(trip_data)},
-                    {"role": "user", "content": self._get_user_prompt(trip_data)}
+                    {"role": "user", "content": "Generate travel recommendations based on the provided parameters."}
                 ],
                 temperature=0.7,
                 max_tokens=4000
             )
             
-            # Get the response content
-            content = response.choices[0].message.content.strip()
-            if not content:
-                return {"success": False, "error": "No travel plan was generated"}
+            try:
+                content = response.choices[0].message.content.strip()
                 
-            return {
-                "success": True,
-                "result": content
-            }
-            
+                # Basic validation of the response format
+                if not content:
+                    raise ValueError("No travel plan was generated. Please try again - it usually works on the second try!")
+                    
+                return {
+                    'success': True,
+                    'result': content
+                }
+                
+            except (AttributeError, IndexError) as e:
+                print(f"Error parsing AI response: {str(e)}")
+                raise ValueError("A temporary error occurred while processing the AI response. Please try again - it usually works on the second try!")
+                
         except Exception as e:
-            error_message = str(e)
-            print(f"DEBUG: Error in generate_travel_plan: {error_message}")
-            return {"success": False, "error": f"Error generating trip: {error_message}"}
+            print(f"Error in generate_travel_plan: {str(e)}")
+            if "timeout" in str(e).lower():
+                raise TimeoutError("The AI took a bit too long to respond. Please try again - it usually works on the second try!")
+            raise

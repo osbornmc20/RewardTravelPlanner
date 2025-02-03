@@ -31,95 +31,119 @@ const TripGenerator = {
     },
 
     async generateTrip() {
-        console.log('Generate trip button clicked');
-        this.clearResults();
-
+        console.log('Generating trip...');
+        
         try {
-            // Validate required fields
-            const errors = TripInfo.validateTripInfo();
-            const airports = DepartingAirports.getSelectedAirports();
-            const tripTypes = TripTypes.getSelectedTypes();
+            // Get trip types
+            const tripTypes = window.TripTypes.getSelectedTypes();
+            if (!tripTypes || tripTypes.length === 0) {
+                throw new Error('Please select at least one trip type');
+            }
             
-            if (!airports || !airports.length) {
-                errors.push('At least one departure airport is required');
+            // Get airports
+            const airports = window.DepartingAirports.getSelectedAirports();
+            if (!airports || airports.length === 0) {
+                throw new Error('Please select at least one departure airport');
             }
-            if (!tripTypes || !tripTypes.length) {
-                errors.push('At least one trip type is required');
-            }
-
-            if (errors.length > 0) {
-                this.displayErrors(errors);
-                return;
-            }
-
-            this.setGeneratingState(true);
             
-            // Collect and validate data from all modules
-            const tripInfo = TripInfo.getTripInfo();
-            const pointsPrograms = await fetch('/points/list')
-                .then(response => response.json())
-                .then(data => data.programs || []);
+            // Get trip info
+            const tripInfo = window.TripInfo.getTripInfo();
+            const tripErrors = window.TripInfo.validateTripInfo();
+            if (tripErrors.length > 0) {
+                throw new Error(tripErrors.join('\n'));
+            }
 
+            // Get points programs from active programs
+            const pointsPrograms = $('.points-input').map(function() {
+                const $card = $(this).closest('.card');
+                return {
+                    program_name: $card.find('.card-title').text().trim(),
+                    points_balance: parseInt($(this).val())
+                };
+            }).get();
+
+            if (pointsPrograms.length === 0) {
+                throw new Error('Please add at least one loyalty program to get personalized trip recommendations');
+            }
+            
+            // Combine all data
             const tripData = {
                 trip_types: tripTypes,
                 airports: airports,
                 points_programs: pointsPrograms,
                 ...tripInfo
             };
-
-            // Additional validation before sending
-            if (!tripData.trip_length || !tripData.max_flight_length) {
-                throw new Error('Trip length and maximum flight length are required');
-            }
-
-            console.log('Sending trip data:', tripData);
             
-            const response = await this.sendTripRequest(tripData);
-            await this.handleTripResponse(response);
+            console.log('Sending trip request with data:', tripData);
+            
+            // Show loading state
+            this.setGeneratingState(true);
+            this.clearResults();
+            
+            // Send request
+            const data = await this.sendTripRequest(tripData);
+            await this.handleTripResponse(data);
+            
         } catch (error) {
             console.error('Error generating trip:', error);
-            this.displayError(error.message || 'An unexpected error occurred. Please try again.');
+            this.displayError(error.message || 'An unexpected error occurred. Please try again - it usually works on the second try!');
         } finally {
             this.setGeneratingState(false);
         }
     },
 
     async sendTripRequest(tripData) {
-        const response = await fetch('/generate_trip', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(tripData)
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
-        // First check if response is ok
-        if (!response.ok) {
-            // For non-200 responses, try to get error details
-            try {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to generate trip');
-            } catch (jsonError) {
-                // If we can't parse JSON, get the text
-                const text = await response.text();
-                // Check if it's an HTML response (indicating a server error)
-                if (text.includes('<!DOCTYPE html>')) {
-                    throw new Error('Server error occurred. Please try again.');
-                }
-                throw new Error('Failed to generate trip. Please try again.');
-            }
-        }
-
-        // For 200 responses, try to parse JSON
         try {
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.error || 'Failed to generate trip');
+            const response = await fetch('/generate_trip', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tripData),
+                signal: controller.signal
+            });
+
+            // Clone the response for potential error handling
+            const responseClone = response.clone();
+
+            // First check if response is ok
+            if (!response.ok) {
+                // For non-200 responses, try to get error details
+                try {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'A temporary error occurred. Please try your request again - it usually works on the second try!');
+                } catch (jsonError) {
+                    // If we can't parse JSON, use the cloned response to get text
+                    const text = await responseClone.text();
+                    // Check if it's an HTML response (indicating a server error)
+                    if (text.includes('<!DOCTYPE html>')) {
+                        throw new Error('A temporary server hiccup occurred. Please try again - it usually works on the second try!');
+                    }
+                    throw new Error('A temporary error occurred. Please try your request again - it usually works on the second try!');
+                }
             }
-            return data;
-        } catch (jsonError) {
-            console.error('JSON parsing error:', jsonError);
-            throw new Error('Error processing server response. Please try again.');
+
+            // For 200 responses, try to parse JSON
+            try {
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'A temporary error occurred. Please try your request again - it usually works on the second try!');
+                }
+                return data;
+            } catch (jsonError) {
+                console.error('JSON parsing error:', jsonError);
+                throw new Error('A temporary error occurred while processing the response. Please try again - it usually works on the second try!');
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                throw new Error('The request took longer than expected. Please try again - it usually works on the second try!');
+            }
+            throw error;
+        } finally {
+            clearTimeout(timeoutId);
         }
     },
 
@@ -127,23 +151,13 @@ const TripGenerator = {
         this.resultsContainer.innerHTML = '';
     },
 
-    displayErrors(errors) {
-        this.resultsContainer.innerHTML = `
-            <div class="alert alert-danger">
-                <strong>Please fix the following errors:</strong>
-                <ul>
-                    ${errors.map(error => `<li>${error}</li>`).join('')}
-                </ul>
+    displayError(message) {
+        const errorHtml = `
+            <div class="alert alert-danger" role="alert">
+                ${message}
             </div>
         `;
-    },
-
-    displayError(error) {
-        this.resultsContainer.innerHTML = `
-            <div class="alert alert-danger">
-                <strong>Error:</strong> ${error}
-            </div>
-        `;
+        this.resultsContainer.innerHTML = errorHtml;
     },
 
     setGeneratingState(isGenerating) {
@@ -172,10 +186,52 @@ const TripGenerator = {
     },
 
     async handleTripResponse(data) {
+        // Add essential styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .trip-results-container {
+                padding: 20px;
+            }
+            .destination-section {
+                background-color: white;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 30px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .destination-header {
+                color: #2c3e50;
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            .destination-summary {
+                background-color: #f8f9fa;
+                padding: 20px;
+                border-radius: 8px;
+                border-left: 4px solid #3498db;
+                margin-bottom: 20px;
+            }
+            .option-section {
+                background-color: white;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            .option-header {
+                color: #2c3e50;
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+        `;
+        document.head.appendChild(style);
         console.log('Handling trip response:', data);
-        
-        if (!data.result) {
-            throw new Error('No trip results received');
+
+        if (!data || !data.success || !data.result) {
+            throw new Error('No trip recommendations were received. Please try again - it usually works on the second try!');
         }
 
         // Split the response into destinations and filter out empty ones
@@ -223,7 +279,7 @@ const TripGenerator = {
                 // Get the rest of the content
                 content = lines.slice(optionsStartIndex).join('\n');
             }
-
+            
             // Split into economy and luxury options
             const [economySection = '', luxurySection = ''] = content.split(/OPTION B - LUXURY EXPERIENCE/i);
             
@@ -284,125 +340,13 @@ const TripGenerator = {
         if (!resultsHtml.includes('destination-section')) {
             resultsHtml += `
                 <div class="alert alert-danger">
-                    Unable to generate valid trip suggestions. Please try again.
+                    Unable to generate valid trip suggestions. Please try again - it usually works on the second try!
                 </div>
             `;
         }
         
         resultsHtml += '</div>';
         this.resultsContainer.innerHTML = resultsHtml;
-        
-        // Add styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .trip-results-container {
-                padding: 20px;
-            }
-            .destination-header {
-                color: #2c3e50;
-                border-bottom: 2px solid #3498db;
-                padding-bottom: 10px;
-                font-size: 2rem;
-            }
-            .destination-summary {
-                background-color: #f8f9fa;
-                padding: 25px;
-                border-radius: 8px;
-                border-left: 4px solid #3498db;
-                margin-bottom: 30px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            }
-            .summary-section, .recommendations-section {
-                margin-bottom: 20px;
-            }
-            .summary-title {
-                color: #2c3e50;
-                margin-bottom: 15px;
-                font-size: 1.3rem;
-                font-weight: 600;
-                border-bottom: 1px solid #e9ecef;
-                padding-bottom: 8px;
-            }
-            .summary-content {
-                color: #444;
-                line-height: 1.6;
-                font-size: 1.1rem;
-            }
-            .recommendation-category {
-                color: #2c3e50;
-                margin: 15px 0 10px 0;
-                font-size: 1.1rem;
-                font-weight: 600;
-            }
-            .recommendation-item {
-                color: #444;
-                margin: 8px 0 8px 15px;
-                position: relative;
-                line-height: 1.5;
-            }
-            .recommendation-item::before {
-                content: "•";
-                color: #3498db;
-                position: absolute;
-                left: -15px;
-            }
-            .recommendations-content {
-                background-color: white;
-                padding: 15px;
-                border-radius: 6px;
-                border: 1px solid #e9ecef;
-            }
-            .option-section {
-                margin-bottom: 20px;
-                background-color: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            }
-            .option-header {
-                color: #2c3e50;
-                font-size: 1.5rem;
-                margin-bottom: 20px;
-                padding-bottom: 10px;
-                border-bottom: 2px solid #3498db;
-            }
-            .detail-box {
-                background-color: white;
-                border: 1px solid #e9ecef;
-                border-radius: 6px;
-                padding: 20px;
-                margin-bottom: 15px;
-            }
-            .detail-box h4 {
-                color: #3498db;
-                margin-bottom: 12px;
-                font-size: 1.2rem;
-            }
-            .detail-box ul {
-                list-style: none;
-                padding-left: 0;
-                margin-bottom: 0;
-            }
-            .detail-box li {
-                margin-bottom: 8px;
-                padding-left: 20px;
-                position: relative;
-                line-height: 1.5;
-            }
-            .detail-box li:before {
-                content: "•";
-                position: absolute;
-                left: 0;
-                color: #3498db;
-            }
-            .detail-box li.indented {
-                padding-left: 40px;
-            }
-            .detail-box li.indented:before {
-                left: 20px;
-            }
-        `;
-        document.head.appendChild(style);
     },
 
     formatOptionSection(section) {
