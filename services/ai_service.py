@@ -1,9 +1,11 @@
 from typing import Dict, List
 import os
+import re
 from openai import OpenAI
 from dotenv import load_dotenv
 from flask_login import current_user
 from models import PointsProgram
+from flask import current_app
 
 # Load environment variables from .env file
 load_dotenv()
@@ -13,10 +15,145 @@ api_key = os.getenv('OPENAI_API_KEY')
 if not api_key:
     raise ValueError("OpenAI API key not found in environment variables")
 
-# Initialize OpenAI client with the new API key format
 client = OpenAI(api_key=api_key)
 
 class TravelPlanGenerator:
+    def __init__(self):
+        pass
+        
+    def _get_system_prompt(self, trip_data: Dict) -> str:
+        """Construct the system prompt for the GPT model."""
+        points_balances = {}
+        if current_user.is_authenticated:
+            try:
+                points_balances = {
+                    program.program_name: program.points_balance
+                    for program in PointsProgram.query.filter_by(user_id=current_user.id).all()
+                }
+            except Exception as e:
+                print(f"Error getting points from database: {e}")
+                points_balances = {}
+
+        special_requests = trip_data.get('preferences', 'None specified').strip()
+        special_requests_emphasis = f"""
+⚠️ SPECIAL REQUESTS (PRIME DIRECTIVE - MUST BE FOLLOWED) ⚠️
+{special_requests}
+
+These special requests are your HIGHEST PRIORITY. They override all other considerations except point balance limits.
+- If a request specifies certain regions/countries/cities, ONLY suggest destinations that match
+- If a request excludes certain types of places, NEVER suggest those places
+- If you're unsure if a destination meets ALL special requests, DO NOT suggest it
+- Treat these as strict requirements, not preferences
+
+Example: If the request says "Only show European destinations":
+✓ DO suggest: Paris, France
+✓ DO suggest: Rome, Italy
+✓ DO suggest: Barcelona, Spain
+✗ DO NOT suggest: Tokyo, Japan
+✗ DO NOT suggest: New York, USA
+✗ DO NOT suggest: Sydney, Australia
+
+Your response will be REJECTED if it includes destinations that don't match the special requests.
+"""
+
+        return f"""You are an expert travel planner specializing in credit card & loyalty points optimization. Generate travel recommendations based on:
+
+AVAILABLE POINTS:
+{self._format_points_balances(points_balances)}
+
+{special_requests_emphasis}
+
+TRIP REQUIREMENTS:
+- Departure Airport(s): {', '.join(trip_data['airports'])}
+- Trip Style: {', '.join(trip_data['trip_types'])}
+- Travel Dates: {trip_data['start_date']} to {trip_data['end_date']} ({trip_data['trip_length']} days)
+- Maximum Flight Length: {trip_data['max_flight_length']} hours
+- Direct Flights Only: {'Yes' if trip_data.get('direct_flights') else 'No'}
+
+CRITICAL REQUIREMENTS:
+1. Special Requests are your PRIME DIRECTIVE - they must be followed exactly
+2. Each destination MUST match ALL special requests - no exceptions
+3. All point calculations must be accurate and within available balances
+4. Economy and luxury options must be different
+5. Luxury options must include premium economy, business or first class flights
+6. Fare Type must be clearly specified for all flights
+7. If you're unsure if a destination meets ALL special requests, choose a different one
+8. ALWAYS show exactly 3 destinations, numbered 1, 2, and 3
+9. ALL point calculations must be for ROUND TRIP flights PER PERSON
+10. NEVER exceed available point balances
+
+POINTS USAGE PRIORITY (STRICT ORDER):
+1. Direct Hotel/Airline Program Points
+   - Use points directly in the specific program first
+   - Calculate if enough points for entire stay/flight
+2. Points Transfers to Programs
+   - Transfer credit card points if direct points insufficient
+   - Verify transfer partnerships and consider bonuses
+3. Credit Card Travel Portal (LAST RESORT)
+   - Only if options 1 and 2 not possible
+   - Calculate at 2.0 cents per point value
+
+POINT VALUES (cpp):
+- Credit Cards: Chase 2.05, Amex 2.0, Capital One 1.85
+- Hotels: Hilton 0.6, Marriott 0.8, Hyatt 1.7
+- Airlines: Air Canada 1.5, Alaska 1.45, American 1.65, Delta 1.2, Flying Blue 1.3, JetBlue 1.3, Southwest 1.35, United 1.35
+
+START YOUR RESPONSE WITH THE FOLLOWING FORMAT EXACTLY:
+DESTINATION 1 - [City, Country]:
+Preference Match: [Brief explanation of how this matches ALL special requests and preferences]
+
+OPTION A - ECONOMY EXPERIENCE
+Flight Details:
+- Route: [Airport to destination]
+- Airline: [Airline name]
+- Points Program: [Program name]
+- Points Used: [X points round trip per person]
+- Fare Type: Economy
+
+Hotel Option:
+- Property: [Hotel name]
+- Points Program: [Program name]
+- Total Points Needed: [X points (X points per night)]
+- Property Details: [Brief description]
+
+Value Analysis:
+- Points Used: [Total points used]
+- Points Breakdown:
+  * Airline: [X points] ([Program name])
+  * Hotel: [X points] ([Program name])
+- Dollar Value Saved: [Approx. $X]
+
+OPTION B - LUXURY EXPERIENCE
+Flight Details:
+- Route: [Airport to destination]
+- Airline: [Airline name]
+- Points Program: [Program name]
+- Points Used: [X points round trip per person]
+- Fare Type: [Premium Economy/Business/First]
+
+Hotel Option:
+- Property: [Luxury hotel name]
+- Points Program: [Program name]
+- Total Points Needed: [X points (X points per night)]
+- Property Details: [Brief luxury description]
+
+Value Analysis:
+- Points Used: [Total points used]
+- Points Breakdown:
+  * Airline: [X points] ([Program name])
+  * Hotel: [X points] ([Program name])
+- Dollar Value Saved: [Approx. $X]
+
+[Repeat exact format for DESTINATION 2 and DESTINATION 3]
+
+IMPORTANT FORMATTING NOTES:
+1. Do NOT use any markdown formatting (no **, *, or other symbols)
+2. Use plain text only
+3. Keep the exact section headers as shown
+4. Include Preference Match for EVERY destination
+5. Always show points as "round trip per person" for flights
+6. Start IMMEDIATELY with "DESTINATION 1" - no introduction or preamble"""
+
     def _format_points_balances(self, points_balances):
         """Format points balances into a readable string."""
         if not points_balances:
@@ -27,281 +164,27 @@ class TravelPlanGenerator:
             formatted_points.append(f"- {program}: {points:,} points")
         return "\n".join(formatted_points)
 
-    def _get_system_prompt(self, trip_data: Dict) -> str:
-        """Construct the system prompt for the GPT model."""
-        # For anonymous users, we don't need to query the database at all
-        # Just use what's in trip_data or an empty dict
-        points_balances = {}
-        
-        # Only query the database for authenticated users
-        if current_user.is_authenticated:
-            try:
-                points_balances = {
-                    program.program_name: program.points_balance
-                    for program in PointsProgram.query.filter_by(user_id=current_user.id).all()
-                }
-            except Exception as e:
-                print(f"Error getting points from database: {e}")
-                # Fallback to empty points for safety
-                points_balances = {}
-        
-        # Build the prompt
-        return f"""You are the world's best travel planner specializing in credit card & loyalty points optimization. You know the in's and out's of every program, the sweet spot redemptions, and the intricacies of transfering points between programs.
-
-AVAILABLE POINTS:
-{self._format_points_balances(points_balances)}
-
-TRIP REQUIREMENTS:
-- Departure Airport(s): {', '.join(trip_data['airports'])}
-- Trip Style: {', '.join(trip_data['trip_types'])}
-- Travel Dates: {trip_data['start_date']} to {trip_data['end_date']} ({trip_data['trip_length']} days)
-- Maximum Flight Length: {trip_data['max_flight_length']} hours
-- Direct Flights Only: {'Yes' if trip_data.get('direct_flights') else 'No'}
-
-Special Requests & Preferences:
-{trip_data.get('preferences', 'None specified')}
-
-CRITICAL REQUIREMENTS:
-1. ALWAYS suggest exactly 3 destinations - no more, no less
-2. NEVER suggest point transfers that exceed available point balances
-3. User preferences are THE HIGHEST PRIORITY:
-   - If a user requests to avoid specific destinations (e.g., Cancun, touristy cities), NEVER suggest them
-   - Each suggested destination MUST align with ALL user preferences
-   - If unsure whether a destination matches preferences, choose a different one
-
-POINTS USAGE PRIORITY (STRICT ORDER):
-1. Direct Hotel/Airline Program Points:
-   - First try using available points in the specific program (e.g., Hyatt points for Hyatt hotels)
-   - Calculate if there are enough points for the entire stay
-   - For luxury options, check high-end properties within the same program first
-
-2. Points Transfers to Hotel/Airline Programs:
-   - If direct points are insufficient, calculate needed transfers from credit card points
-   - Example: Transfer Chase Ultimate Rewards to World of Hyatt
-   - Ensure total transfers across ALL suggestions don't exceed available credit card points
-   - Consider transfer bonuses when available
-
-3. Credit Card Travel Portal (LAST RESORT):
-   - Only suggest portal bookings if options 1 and 2 are not possible
-   - Calculate points needed at 2.0 cents per point value
-   - Example: "150,000 Chase Ultimate Rewards points via Chase Travel Portal (at 2.0 cpp)"
-
-NEVER suggest cash payments unless explicitly requested by the user.
-
-DESTINATION SELECTION RULES:
-1. Avoid suggesting destinations that conflict with user preferences, even if they offer good point values
-2. If user wants to avoid crowds/tourists:
-   - Skip major tourist hotspots (e.g., Cancun, Honolulu, Phuket)
-   - Focus on lesser-known alternatives
-   - Consider off-season timing
-   - Suggest boutique properties over large resorts
-3. Consider the trip type selection (Beach, City, etc.) in conjunction with user preferences
-
-BOOKING OPTIONS PRIORITY:
-1. Direct points redemption with hotel/airline
-2. Point transfers if available points are sufficient
-3. Chase Ultimate Rewards portal booking at 2.0 cpp
-4. Cash payment only as last resort
-
-TRANSFER RULES:
-   - Check for program transfer opportunities to maximize redemption value
-   - Consider current transfer bonus offers
-   - Calculate and show all required point transfers
-   - Verify transfer partnerships are active
-
-POINTS VALUATION RULES:
-   - Value Chase UR points at 2.05 cpp for travel
-   - Value Amex MR points at 2.0 cpp for travel
-   - Value Capital One Points at 1.85 cpp for travel
-   - Value hotel points at: Hilton 0.6cpp, Marriott 0.8cpp, Hyatt 1.7cpp
-   - Value Airline points at: Air Canada 1.5cpp, Alaska 1.45 cpp, America 1.65cpp, Delta 1.2cpp, Flying Blue 1.3cpp, Jetblue 1.3cpp, Southwest 1.35cpp, United 1.35cpp
-   - Double check that cpp values used in your calculations are correct
-   - Focus on using points first before offering cash options
-
-RESPONSE FORMAT:
-You must provide exactly 3 destinations using this exact format:
-
-DESTINATION 1 - [City, Country]:
-Preference Match: [Brief explanation of how this destination matches user preferences]
-
-OPTION A - ECONOMY EXPERIENCE
-Flight Details:
-- Route: [LAX to destination]
-- Airline: [Airline name]
-- Points Program: [Program name]
-- Points Used: [X points]
-- Total Points: [X points round trip]
-
-Hotel Option:
-- Property: [Hotel name]
-- Points Program: [Program name]
-- Total Points Needed: [X points (X points per night)]
-- Property Details: [Brief description]
-
-Value Analysis:
-- Points Used: [Total points used for this option]
-- Points Breakdown:
-  * Airline: [X points] ([Program name])
-  * Hotel: [X points] ([Program name])
-- Dollar Value Saved: [Approx. $X (using the point valuations provided for each program)]
-
-IMPORTANT FORMATTING RULES:
-1. In Flight Details, ALWAYS list Points Program immediately after Airline
-2. In Value Analysis:
-   - Show Points Used first (total points for both flight and hotel)
-   - Then Points Breakdown showing Airline and Hotel separately
-   - Finally show Dollar Value Saved
-3. Always include "$" symbol in dollar amounts
-4. Always specify the points program name when showing points
-
-OPTION B - LUXURY EXPERIENCE
-[Same format as Option A, but with luxury properties. Remember to follow POINTS USAGE PRIORITY]
-
-[Repeat exact format for DESTINATION 2 and DESTINATION 3]
-
-EXPERIENCE GUIDELINES:
-OPTION A - ECONOMY EXPERIENCE:
-- Round Trip Economy class flights using minimal points
-- Mid-tier hotel properties (e.g., Hyatt Place, Marriott Courtyard)
-- Focus on maximizing length of stay
-- Accommodate user preferences where possible
-- Target properties that offer good value for points
-
-OPTION B - LUXURY EXPERIENCE:
-- Round Trip Business/First class flights
-- Luxury hotel properties (e.g., Park Hyatt, St. Regis)
-- Focus on premium experiences and locations
-- Accommodate user preferences where possible
-- Consider suite upgrades using points where available
-
-For each option, include:
-1. Flight Details:
-   - Best round trip routing options with point costs
-   - Required point transfers from Chase/Amex if needed
-   - Total points needed and cpp value
-   - Consider positioning flights if they save >20k points
-   - Never exceed the maximum flight length specified
-   - Maximize layovers in hub cities with good lounges
-
-2. Hotel Options:
-   - Property details and location benefits
-   - Follow the POINTS USAGE PRIORITY order strictly
-   - Total points needed and cpp value
-   - How the property matches user preferences
-   - Highlight any special features or benefits
-
-3. Value Analysis:
-   - Combined points needed from each program
-   - Dollar value saved based on current cash prices
-   - Show all point transfers needed
-   - Explain why this represents good value
-
-FORMATTING RULES:
-1. Do not use markdown formatting or special characters
-2. Keep responses clear and concise
-3. Separate sections clearly with proper headers"""
-
     def _get_user_prompt(self, trip_data: Dict) -> str:
         """Construct the user prompt for the GPT model."""
-        # For anonymous users, we don't need points at all
-        # The system prompt already includes the points information
-        return """Based on the above points balances and trip requirements, suggest optimal destinations:
+        return """Start your response IMMEDIATELY with 'DESTINATION 1' without any introduction or preamble. Generate exactly 3 destinations following the format above. Remember:
 
-1. Provide EXACTLY 3 destinations that match the trip requirements
-2. For each destination, include:
-   - Preference Match: Brief explanation of why this matches the trip requirements
-   - OPTION A - ECONOMY EXPERIENCE
-   - OPTION B - LUXURY EXPERIENCE
-3. For each experience option, include:
-   - Flight Details (route, airline, points program, points cost)
-   - Hotel Option (property, points program, points per night)
-   - Total points needed
-   - Approximate dollar value saved using points
-
-Format each destination as:
-DESTINATION 1 - City, Country
-Preference Match: [explanation]
-
-OPTION A - ECONOMY EXPERIENCE
-[economy details]
-
-OPTION B - LUXURY EXPERIENCE
-[luxury details]"""
-
-    def parse_gpt_response(self, response_text: str) -> Dict:
-        """Parse the GPT response text into a structured format."""
-        destinations = []
-        current_destination = None
-        current_section = None
-        current_option = None
-        
-        for line in response_text.split('\n'):
-            line = line.strip()
-            if not line:
-                continue
-                
-            # New destination
-            if line.startswith('DESTINATION'):
-                if current_destination:
-                    destinations.append(current_destination)
-                city_country = line.split(' - ')[1]
-                current_destination = {
-                    'city': city_country.split(',')[0].strip(),
-                    'country': city_country.split(',')[1].strip() if ',' in city_country else '',
-                    'economy': {},
-                    'luxury': {}
-                }
-                current_option = None
-                
-            # Preference match
-            elif line.startswith('Preference Match:'):
-                if current_destination:
-                    current_destination['preference_match'] = line.replace('Preference Match:', '').strip()
-                    
-            # Economy option
-            elif 'OPTION A - ECONOMY EXPERIENCE' in line:
-                current_option = 'economy'
-                current_section = None
-                
-            # Luxury option
-            elif 'OPTION B - LUXURY EXPERIENCE' in line:
-                current_option = 'luxury'
-                current_section = None
-                
-            # Section headers
-            elif line.endswith('Details:') or line.endswith('Option:') or line.endswith('Analysis:'):
-                current_section = line.replace(':', '').lower().replace(' ', '_')
-                
-            # Detail lines
-            elif line.startswith('-') and current_destination and current_option and current_section:
-                key = line.split(':')[0].replace('-', '').strip().lower().replace(' ', '_')
-                value = line.split(':')[1].strip() if ':' in line else ''
-                current_destination[current_option][key] = value
-                
-            # Points breakdown items
-            elif line.startswith('*') and current_destination and current_option:
-                key = line.split(':')[0].replace('*', '').strip().lower().replace(' ', '_')
-                value = line.split(':')[1].strip() if ':' in line else ''
-                current_destination[current_option][key] = value
-        
-        # Add the last destination
-        if current_destination:
-            destinations.append(current_destination)
-            
-        return {
-            'success': True,
-            'destinations': destinations
-        }
+1. Start DIRECTLY with 'DESTINATION 1 - [City, Country]:'
+2. Special Requests are your PRIME DIRECTIVE - follow them exactly
+3. Each destination MUST match ALL special requests - no exceptions
+4. All point calculations must be accurate and within available balances
+5. Economy and luxury options must be different
+6. Luxury options must include premium economy, business or first class flights
+7. Fare Type must be clearly specified for all flights
+8. If you're unsure if a destination meets ALL special requests, choose a different one
+9. ALL point calculations must be for ROUND TRIP flights PER PERSON
+10. NEVER exceed available point balances"""
 
     def generate_travel_plan(self, trip_data: Dict) -> Dict:
         """Generate a travel plan using OpenAI's GPT model."""
         try:
-            print("\nDEBUG: Starting generate_travel_plan")
-            print(f"DEBUG: Trip data received: {trip_data}")
-            
             # Create the chat completion
             response = client.chat.completions.create(
-                model="gpt-4-turbo",
+                model="chatgpt-4o-latest",
                 messages=[
                     {"role": "system", "content": self._get_system_prompt(trip_data)},
                     {"role": "user", "content": self._get_user_prompt(trip_data)}
@@ -310,7 +193,7 @@ OPTION B - LUXURY EXPERIENCE
                 max_tokens=4000
             )
             
-            # Get and validate the response content
+            # Get the response content
             content = response.choices[0].message.content.strip()
             if not content:
                 return {"success": False, "error": "No travel plan was generated"}
@@ -321,8 +204,6 @@ OPTION B - LUXURY EXPERIENCE
             }
             
         except Exception as e:
-            print(f"DEBUG: Error in generate_travel_plan: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            error_message = str(e)
+            print(f"DEBUG: Error in generate_travel_plan: {error_message}")
+            return {"success": False, "error": f"Error generating trip: {error_message}"}
