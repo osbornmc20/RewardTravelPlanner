@@ -13,7 +13,15 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///points_tracker.db'
+
+# Database configuration
+if os.getenv('RENDER'):
+    # Production database (PostgreSQL on Render)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', '').replace('postgres://', 'postgresql://')
+else:
+    # Local database (SQLite)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///points_tracker.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
