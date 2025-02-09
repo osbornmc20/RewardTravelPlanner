@@ -286,19 +286,23 @@ const TripGenerator = {
             // Only create the destination section if we have valid data
             if (economySection && luxurySection && destName !== 'Unknown Destination') {
                 resultsHtml += `
-                    <div class="destination-section mb-5">
-                        <h2 class="destination-header mb-4">Destination ${index + 1} - ${destName}</h2>
+                    <div class="destination-section mb-4">
+                        <div class="destination-header" onclick="if(window.innerWidth <= 768) { this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show'); }">
+                            <h3>Destination ${index + 1} - ${destName}</h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
                         
-                        <div class="destination-summary mb-4">
-                            <div class="summary-section mb-4">
-                                <h4 class="summary-title">Overview</h4>
-                                <div class="summary-content">
-                                    ${destinationSummary}
+                        <div class="destination-content">
+                            <div class="destination-summary mb-4">
+                                <div class="summary-section mb-4">
+                                    <h4 class="summary-title">Overview</h4>
+                                    <div class="summary-content">
+                                        ${destinationSummary}
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="recommendations-section">
-                                <h4 class="summary-title">Why We Recommend This Destination</h4>
+                                
+                                <div class="recommendations-section">
+                                    <h4 class="summary-title">Why We Recommend This Destination</h4>
                                 <div class="recommendations-content">
                                     ${recommendations.split('<br>').map(rec => {
                                         // Check if it's a main section header (ends with ':')
@@ -347,6 +351,65 @@ const TripGenerator = {
         
         resultsHtml += '</div>';
         this.resultsContainer.innerHTML = resultsHtml;
+        
+        // Dispatch event when results are loaded
+        document.dispatchEvent(new Event('tripResultsLoaded'));
+
+        // Add click handlers for Continue Planning buttons
+        document.querySelectorAll('.select-trip-option').forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Remove selection from other options
+                document.querySelectorAll('.option-content').forEach(content => {
+                    content.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                const optionContent = e.target.closest('.option-content');
+                optionContent.classList.add('selected');
+                
+                // Hide default state and show selected state
+                document.querySelector('.default-state').style.display = 'none';
+                document.querySelector('.selected-trip-summary').style.display = 'block';
+                
+                // Get trip details from the selected option
+                const routeElement = optionContent.querySelector('.detail-box:first-of-type li strong');
+                const propertyElements = Array.from(optionContent.querySelectorAll('.detail-box li strong'));
+                const propertyElement = propertyElements.find(el => el.textContent === 'Property:');
+                
+                let destination = 'Selected Destination';
+                let hotel = 'Selected Hotel';
+                
+                // Extract destination
+                if (routeElement && routeElement.textContent === 'Route:') {
+                    destination = routeElement.parentElement.textContent.split('Route:')[1].trim();
+                }
+                
+                // Extract hotel
+                if (propertyElement) {
+                    hotel = propertyElement.parentElement.textContent.split('Property:')[1].trim();
+                }
+
+                // Get trip month and length
+                const tripMonth = document.querySelector('#travelMonths')?.value;
+                const tripLength = document.querySelector('#tripLength')?.value;
+
+                // Update trip summary
+                const tripSummary = document.querySelector('.trip-summary');
+                tripSummary.innerHTML = `
+                    <strong>${button.dataset.optionType === 'luxury' ? 'Luxury' : 'Economy'} Experience</strong><br>
+                    <strong>Route:</strong> ${destination}<br>
+                    <strong>Hotel:</strong> ${hotel}<br>
+                    <strong>Travel Month:</strong> ${tripMonth || ''}<br>
+                    <strong>Duration:</strong> ${tripLength ? `${tripLength} days` : ''}
+                `;
+                
+                // Enable MindTrip button
+                document.getElementById('mindtrip-btn').disabled = false;
+                
+                // Scroll to MindTrip section
+                document.getElementById('mindtrip-integration').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
     },
 
     formatOptionSection(section) {
@@ -367,6 +430,41 @@ const TripGenerator = {
             const cleaned = content.trim();
             return cleaned && cleaned !== '-' && cleaned !== '--' && cleaned !== '•';
         };
+
+        // Helper function to format content with bold keywords
+        const formatContent = (content) => {
+            // Replace 'round trip' with 'RT'
+            content = content.replace(/round trip/gi, 'RT');
+            
+            // Format fare type to be in parentheses at the end of points used
+            if (content.includes('Fare Type:')) {
+                return '';
+            }
+            if (content.includes('Points used:')) {
+                const fareType = lines.find(l => l.includes('Fare Type:'));
+                if (fareType) {
+                    const type = fareType.split(':')[1].trim();
+                    content = content.replace('Points used:', 'Points used') + ` (${type})`;
+                }
+            }
+
+            // Skip Award Availability lines
+            if (content.includes('Award Availability:')) {
+                return '';
+            }
+
+            // Bold key elements
+            const keywords = [
+                'Route:', 'Airline:', 'Points Program:', 'Hotel:', 
+                'Points Used:', 'Total Points Needed:', 'Property:', 'Property Details:',
+                'Points Breakdown:', 'Dollar Value Saved:', 'Cash value:', 'Points value:'
+            ];
+            keywords.forEach(keyword => {
+                content = content.replace(keyword, `<strong>${keyword}</strong>`);
+            });
+
+            return content;
+        };
         
         lines.forEach(line => {
             line = line.trim();
@@ -382,18 +480,23 @@ const TripGenerator = {
                 const content = line.substring(1).trim();
                 if (!isValidContent(content)) return;
                 
-                const isIndented = line.startsWith('*');
+                const isIndented = line.startsWith('*') || 
+                                  (currentSection === 'value' && 
+                                   (content.includes('Airline:') || content.includes('Hotel:')));
                 const className = isIndented ? 'indented' : '';
                 
+                const formattedContent = formatContent(content);
+                if (!formattedContent) return;
+
                 switch (currentSection) {
                     case 'flight':
-                        flightDetails += `<li>${content}</li>`;
+                        flightDetails += `<li class="${className}">${formattedContent}</li>`;
                         break;
                     case 'hotel':
-                        hotelOption += `<li>${content}</li>`;
+                        hotelOption += `<li class="${className}">${formattedContent}</li>`;
                         break;
                     case 'value':
-                        valueAnalysis += `<li class="${className}">${content}</li>`;
+                        valueAnalysis += `<li class="${className}">${formattedContent}</li>`;
                         break;
                 }
             }
@@ -405,7 +508,7 @@ const TripGenerator = {
         if (flightDetails) {
             sectionsHtml += `
                 <div class="detail-box">
-                    <h4>Flight Details</h4>
+                    <h4 class="underline">Flight Details</h4>
                     <ul>${flightDetails}</ul>
                 </div>
             `;
@@ -414,7 +517,7 @@ const TripGenerator = {
         if (hotelOption) {
             sectionsHtml += `
                 <div class="detail-box">
-                    <h4>Hotel Option</h4>
+                    <h4 class="underline">Hotel Option</h4>
                     <ul>${hotelOption}</ul>
                 </div>
             `;
@@ -423,11 +526,20 @@ const TripGenerator = {
         if (valueAnalysis) {
             sectionsHtml += `
                 <div class="detail-box">
-                    <h4>Value Analysis</h4>
+                    <h4 class="underline">Value Analysis</h4>
                     <ul>${valueAnalysis}</ul>
                 </div>
             `;
         }
+
+        // Add selection button
+        sectionsHtml += `
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-primary select-trip-option" data-option-type="${section.includes('Luxury') ? 'luxury' : 'economy'}">
+                    <i class="fas fa-plane-departure me-2"></i>Continue Planning
+                </button>
+            </div>
+        `;
         
         return html + sectionsHtml + '</div>';
     },

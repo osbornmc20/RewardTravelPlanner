@@ -209,9 +209,217 @@
     {% include 'trip_info.html' %}
 </div>
 
+    <!-- MindTrip Integration Section -->
+    <div id="mindtrip-integration" class="card mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">Continue Planning Your Trip</h3>
+        </div>
+        <div class="card-body text-center">
+            <!-- Default State -->
+            <div class="default-state">
+                <p class="lead mb-4">Select an option above to continue planning with MindTrip.ai</p>
+            </div>
+            <!-- Selected State -->
+            <div class="selected-trip-summary" style="display: none;">
+                <div class="selected-details mb-4">
+                    <h4 class="mb-3">Selected Option:</h4>
+                    <p class="trip-summary mb-2">Loading...</p>
+                </div>
+                <button id="mindtrip-btn" class="btn btn-primary btn-lg" disabled>
+                    <i class="fas fa-plane-departure me-2"></i>Continue Planning on MindTrip.ai
+                </button>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}
+<!-- Add MindTrip Integration Script -->
+<script>
+$(document).ready(function() {
+    // Reset selection when new results are loaded
+    document.addEventListener('tripResultsLoaded', function() {
+        // Clear any existing selections
+        document.querySelectorAll('.option-content').forEach(content => {
+            content.classList.remove('selected');
+        });
+        // Reset MindTrip banner
+        const mindtripBanner = document.getElementById('mindtrip-integration');
+        mindtripBanner.classList.remove('active');
+        const mindtripBtn = document.getElementById('mindtrip-btn');
+        mindtripBtn.disabled = true;
+        
+        // Show default state and hide selected state
+        document.querySelector('.default-state').style.display = 'block';
+        document.querySelector('.selected-trip-summary').style.display = 'none';
+    });
+
+    // Handle trip option selection
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.select-trip-option')) {
+            const button = e.target.closest('.select-trip-option');
+            const optionType = button.dataset.optionType;
+            const optionContent = button.closest('.option-content');
+            
+            // Remove selection from other options
+            document.querySelectorAll('.option-content').forEach(content => {
+                content.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            optionContent.classList.add('selected');
+            
+            // Hide default state and show selected state
+            document.querySelector('.default-state').style.display = 'none';
+            document.querySelector('.selected-trip-summary').style.display = 'block';
+            
+            // Get trip details from the selected option
+            const routeElement = optionContent.querySelector('.detail-box:first-of-type li strong');
+            const propertyElement = optionContent.querySelector('.detail-box li strong');
+            
+            let destination = 'Selected Destination';
+            let hotel = 'Selected Hotel';
+            
+            // Extract destination
+            if (routeElement && routeElement.textContent === 'Route:') {
+                destination = routeElement.parentElement.textContent.split('Route:')[1].trim();
+            }
+            
+            // Extract hotel
+            const propertyElements = Array.from(optionContent.querySelectorAll('.detail-box li strong'));
+            const propertyElement2 = propertyElements.find(el => el.textContent === 'Property:');
+            if (propertyElement2) {
+                hotel = propertyElement2.parentElement.textContent.split('Property:')[1].trim();
+            }
+
+            // Get trip month and length
+            const tripMonth = document.querySelector('#travelMonths')?.value;
+            const tripLength = document.querySelector('#tripLength')?.value;
+
+            // Use the full travel date range
+            let formattedMonth = tripMonth || '';
+            
+            const tripDetails = {
+                type: optionType,
+                destination: destination,
+                hotel: hotel,
+                month: formattedMonth,
+                duration: tripLength ? `${tripLength} days` : ''
+            };
+            
+            // Update MindTrip banner
+            const mindtripBanner = document.getElementById('mindtrip-integration');
+            mindtripBanner.classList.add('active');
+            
+            // Update trip summary
+            const tripSummary = mindtripBanner.querySelector('.trip-summary');
+            tripSummary.innerHTML = `
+                <strong>${tripDetails.type === 'luxury' ? 'Luxury' : 'Economy'} Experience</strong><br>
+                <strong>Route:</strong> ${tripDetails.destination}<br>
+                <strong>Hotel:</strong> ${tripDetails.hotel}<br>
+                <strong>Travel Month:</strong> ${tripDetails.month}<br>
+                <strong>Duration:</strong> ${tripDetails.duration}
+            `;
+            
+            // Enable and update the MindTrip button
+            const mindtripBtn = document.getElementById('mindtrip-btn');
+            mindtripBtn.disabled = false;
+            
+            // Scroll to the MindTrip banner
+            mindtripBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    // Handle MindTrip button click
+    document.getElementById('mindtrip-btn').addEventListener('click', async function() {
+        console.log('MindTrip button clicked');
+        const selectedOption = document.querySelector('.option-content.selected');
+        if (!selectedOption) {
+            console.log('No option selected');
+            return;
+        }
+
+        // Get the trip type from the selected option button
+        const optionType = selectedOption.querySelector('.select-trip-option').dataset.optionType;
+        const tripSummary = document.querySelector('.trip-summary').innerHTML;
+        
+        // Parse destination and hotel from trip summary
+        const lines = tripSummary.split('<br>');
+        const destination = lines[1].split('<strong>Route:</strong>')[1].trim();
+        const hotel = lines[2].split('<strong>Hotel:</strong>')[1].trim();
+        const tripMonth = lines[3].split('<strong>Travel Month:</strong>')[1].trim();
+        const tripLength = lines[4].split('<strong>Duration:</strong>')[1].trim().split(' ')[0];
+
+        // Extract destination city (remove 'LAX to ' if present)
+        const destinationCity = destination.split(' to ')[1] || destination;
+
+        const prompt = `${tripLength}-day ${optionType === 'luxury' ? 'luxury' : 'budget-friendly'} trip to ${destinationCity}, ${tripMonth}. Staying at ${hotel}.
+
+Please create a day-by-day itinerary with:
+1. Must-see attractions and hidden gems
+2. ${optionType === 'luxury' ? 'Upscale' : 'Value-conscious'} restaurant recommendations
+3. Transportation tips and best times to visit
+4. Special events in ${tripMonth}
+5. Local experiences
+
+Consider:
+- Hotel location for planning
+- Mix of scheduled/free time
+- ${optionType === 'luxury' ? 'Premium experiences' : 'Good value activities'}
+- Weather and crowds
+
+For each day include:
+- Morning activities
+- Afternoon plans
+- Evening activities
+- Dining suggestions`;
+
+        console.log('Generated prompt:', prompt);
+
+        try {
+            // Try to copy to clipboard
+            let copied = false;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(prompt);
+                    copied = true;
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = prompt;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        copied = true;
+                    } catch (err) {}
+                    textArea.remove();
+                }
+            } catch (err) {}
+
+            // Show toast message
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position: fixed; bottom: 20px; right: 20px; padding: 15px; border-radius: 5px; z-index: 1000; color: white; background: ' + (copied ? '#28a745' : '#dc3545');
+            toast.textContent = copied ? 'Trip details copied! Opening MindTrip...' : 'Could not copy trip details automatically. Please copy manually from MindTrip.';
+            document.body.appendChild(toast);
+
+            // Wait 3 seconds then open MindTrip
+            setTimeout(() => {
+                toast.remove();
+                window.open('https://mindtrip.ai/chat', '_blank');
+            }, 3000);
+
+        } catch (error) {
+            console.error('Error:', error);
+            // Open MindTrip even if there's an error
+            window.open('https://mindtrip.ai', '_blank');
+        }
+    });
+});
+</script>
 <script>
 $(document).ready(() => {
     TripTypes.init();
