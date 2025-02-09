@@ -21,12 +21,38 @@
 
 /* Mobile Styles */
 @media (max-width: 768px) {
+    /* Header fixes */
+    .navbar-brand {
+        font-size: 1.1rem;
+        max-width: 80%;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    /* Container width fixes */
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+        max-width: 100%;
+    }
+
+    /* Remove row margins on mobile */
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
     /* Points Programs Grid Layout */
-    .active-programs-grid {
+    .active-programs-grid .row {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
-        padding: 10px;
+        width: 100%;
+    }
+
+    .active-programs-grid .col-12 {
+        width: 100%;
+        padding: 0;
+        max-width: 100%;
     }
 
     .card.h-100 {
