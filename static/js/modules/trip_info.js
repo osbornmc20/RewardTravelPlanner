@@ -36,8 +36,11 @@ const TripInfo = {
         console.log('Getting trip information');
         const tripLength = parseInt($('#tripLength').val(), 10);
         const maxFlightLength = parseInt($('#maxFlightLength').val(), 10);
+        const departureAirport = $('#departureAirport').val();
+        const departureCode = $('input[name="airport_code_0"]').val();
         
         const tripInfo = {
+            departure_airport: departureCode || departureAirport,
             travel_months: $('#travelMonths').val(),
             trip_length: isNaN(tripLength) ? null : tripLength,
             max_flight_length: isNaN(maxFlightLength) ? null : maxFlightLength,

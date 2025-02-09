@@ -31,9 +31,15 @@
 
     /* Container width fixes */
     .container {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding: 0;
+        width: 100%;
         max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .card-body {
+        padding: 1rem;
     }
 
     /* Remove row margins on mobile */
@@ -42,17 +48,69 @@
         margin-right: 0;
     }
     /* Points Programs Grid Layout */
+    .active-programs-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .program-card {
+        width: calc(100% - 2rem);
+        margin: 0 1rem;
+        padding: 1rem;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        box-sizing: border-box;
+    }
+
+    .program-card .card-title {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .program-card .program-type {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .program-card .points-input {
+        margin-bottom: 1rem;
+    }
+
+    .program-card .btn-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    
     .active-programs-grid .row {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 15px;
         width: 100%;
+        margin: 0;
     }
 
     .active-programs-grid .col-12 {
         width: 100%;
         padding: 0;
         max-width: 100%;
+    }
+
+    .card.h-100 {
+        margin: 0;
+        height: auto !important;
+    }
+
+    .card.h-100 .btn {
+        padding: 0.5rem;
+        font-size: 0.9rem;
     }
 
     .card.h-100 {

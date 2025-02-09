@@ -287,8 +287,11 @@ const TripGenerator = {
             if (economySection && luxurySection && destName !== 'Unknown Destination') {
                 resultsHtml += `
                     <section class="destination-section">
-                        <h3>Destination ${index + 1} - ${destName}</h3>
-                        <div class="destination-content">
+                        <div class="destination-header" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show');">
+                            <h3>Destination ${index + 1} - ${destName}</h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="destination-content${window.innerWidth <= 768 ? '' : ' show'} mobile-full-width">
                             <div class="destination-summary mb-4">
                                 <div class="summary-section mb-4">
                                     <h4 class="summary-title">Overview</h4>
@@ -503,27 +506,33 @@ const TripGenerator = {
         
         if (flightDetails) {
             sectionsHtml += `
-                <div class="detail-box">
-                    <h4 class="underline">Flight Details</h4>
-                    <ul>${flightDetails}</ul>
+                <div class="detail-section mobile-full-width">
+                    <h4 class="section-title">Flight Details</h4>
+                    <div class="detail-content">
+                        <ul>${flightDetails}</ul>
+                    </div>
                 </div>
             `;
         }
         
         if (hotelOption) {
             sectionsHtml += `
-                <div class="detail-box">
-                    <h4 class="underline">Hotel Option</h4>
-                    <ul>${hotelOption}</ul>
+                <div class="detail-section mobile-full-width">
+                    <h4 class="section-title">Hotel Option</h4>
+                    <div class="detail-content">
+                        <ul>${hotelOption}</ul>
+                    </div>
                 </div>
             `;
         }
         
         if (valueAnalysis) {
             sectionsHtml += `
-                <div class="detail-box">
-                    <h4 class="underline">Value Analysis</h4>
-                    <ul>${valueAnalysis}</ul>
+                <div class="detail-section mobile-full-width">
+                    <h4 class="section-title">Value Analysis</h4>
+                    <div class="detail-content">
+                        <ul>${valueAnalysis}</ul>
+                    </div>
                 </div>
             `;
         }

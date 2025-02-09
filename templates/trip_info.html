@@ -7,6 +7,18 @@
         <form id="tripInfoForm" class="needs-validation" novalidate>
             <div class="row g-3">
                 <div class="col-md-6">
+                    <label for="departureAirport" class="form-label">Departure Airport</label>
+                    <div class="airport-input-group">
+                        <div class="input-group">
+                            <input type="text" class="form-control airport-input" id="departureAirport"
+                                   placeholder="Enter airport code or city" required
+                                   data-airport-index="0">
+                            <input type="hidden" class="airport-code" name="airport_code_0">
+                        </div>
+                        <div class="airport-suggestions"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
                     <label for="travelMonths" class="form-label">Preferred Travel Months</label>
                     <input type="text" class="form-control" id="travelMonths" required 
                            placeholder="e.g., June-August 2025"
@@ -14,25 +26,24 @@
                            title="Please enter month or month range followed by year (e.g., June 2025 or June-August 2025)">
                     <div class="invalid-feedback">Please enter preferred travel months (e.g., June 2025 or June-August 2025)</div>
                 </div>
-                <div class="col-md-6">
-                    <label for="tripLength" class="form-label">Trip Length (days)</label>
-                    <input type="number" class="form-control" id="tripLength" name="tripLength" 
-                           min="1" max="30" required>
-                    <div class="invalid-feedback">Please enter a trip length between 1 and 30 days</div>
-                </div>
+
             </div>
-            <div class="row mb-3 mt-3">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <label for="maxFlightLength" class="form-label">Max Flight Length (hours)</label>
                     <input type="number" class="form-control" id="maxFlightLength" name="maxFlightLength" 
                            min="1" max="24" required>
                     <div class="invalid-feedback">Please enter a flight length between 1 and 24 hours</div>
-                </div>
-                <div class="col-md-6 d-flex align-items-end">
-                    <div class="form-check mb-3">
+                    <div class="form-check mt-2">
                         <input class="form-check-input" type="checkbox" id="directFlights" name="directFlights">
                         <label class="form-check-label" for="directFlights">Direct Flights Only</label>
                     </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="tripLength" class="form-label">Trip Length (days)</label>
+                    <input type="number" class="form-control" id="tripLength" name="tripLength" 
+                           min="1" max="30" required>
+                    <div class="invalid-feedback">Please enter a trip length between 1 and 30 days</div>
                 </div>
             </div>
             
