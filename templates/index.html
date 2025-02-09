@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/trip_results.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script type="module" src="{{ url_for('static', filename='js/modules/how_it_works.js') }}"></script>
 <style>
 .trip-type-box {
     border: 2px solid #0d6efd;
@@ -48,6 +49,46 @@
 
 {% block content %}
 <div class="container mt-4">
+    <!-- How It Works Section -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center" 
+             data-bs-toggle="collapse" data-bs-target="#howItWorksContent" style="cursor: pointer;">
+            <h3 class="mb-0">How It Works</h3>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="collapse show card-body" id="howItWorksContent">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-luggage-cart mb-3" style="font-size: 2rem; color: #0d6efd;"></i>
+                        <h5 class="mb-2">1. Set Up Your Loyalty Programs</h5>
+                        <p class="text-muted">Add your points balances across different programs to get personalized recommendations. Create an account to save your details for future trips.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-calendar-alt mb-3" style="font-size: 2rem; color: #0d6efd;"></i>
+                        <h5 class="mb-2">2. Tell Us About Your Dream Trip</h5>
+                        <p class="text-muted">Share your travel preferences, including when you want to travel, where you're flying from, how long you want to stay, and any special requests.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-plane-departure mb-3" style="font-size: 2rem; color: #0d6efd;"></i>
+                        <h5 class="mb-2">3. Explore & Plan</h5>
+                        <p class="text-muted">Browse curated trip options based on your available points & criteria.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <i class="fas fa-magic mb-3" style="font-size: 2rem; color: #0d6efd;"></i>
+                        <h5 class="mb-2">4. Plan with MindTrip.ai</h5>
+                        <p class="text-muted">Select your preferred trip and we'll automatically connect you to MindTrip.ai with your trip details ready to create a perfect day-by-day itinerary.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Points Programs Section -->
     <div class="card mb-4">
         <div class="card-header">
@@ -222,11 +263,13 @@
             <!-- Selected State -->
             <div class="selected-trip-summary" style="display: none;">
                 <div class="selected-details mb-4">
-                    <h4 class="mb-3">Selected Option:</h4>
-                    <p class="trip-summary mb-2">Loading...</p>
+                    <h4 class="mb-3">Selected Trip Details</h4>
+                    <div class="trip-summary p-3 border rounded bg-light">
+                        <p class="mb-0">Loading...</p>
+                    </div>
                 </div>
-                <button id="mindtrip-btn" class="btn btn-primary btn-lg" disabled>
-                    <i class="fas fa-plane-departure me-2"></i>Continue Planning on MindTrip.ai
+                <button id="mindtrip-btn" class="btn btn-primary btn-lg mt-3" disabled>
+                    <i class="fas fa-plane-departure me-2"></i>Continue Exploring with MindTrip.ai
                 </button>
             </div>
         </div>
@@ -360,6 +403,7 @@ Please create a day-by-day itinerary with:
 2. ${optionType === 'luxury' ? 'Upscale' : 'Value-conscious'} restaurant recommendations
 3. Transportation tips and best times to visit
 4. Special events in ${tripMonth}
+
 5. Local experiences
 
 Consider:
