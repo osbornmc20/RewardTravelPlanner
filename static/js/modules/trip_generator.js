@@ -94,7 +94,7 @@ const TripGenerator = {
 
     async sendTripRequest(tripData) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
 
         try {
             const response = await fetch('/generate_trip', {
