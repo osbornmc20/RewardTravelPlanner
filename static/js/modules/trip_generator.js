@@ -286,13 +286,9 @@ const TripGenerator = {
             // Only create the destination section if we have valid data
             if (economySection && luxurySection && destName !== 'Unknown Destination') {
                 resultsHtml += `
-                    <div class="destination-section mb-4">
-                        <div class="destination-header" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show');">
-                            <h3>Destination ${index + 1} - ${destName}</h3>
-                            <span class="toggle-icon">▼</span>
-                        </div>
-                        
-                        <div class="destination-content${window.innerWidth <= 768 ? '' : ' show'}">
+                    <section class="destination-section">
+                        <h3>Destination ${index + 1} - ${destName}</h3>
+                        <div class="destination-content">
                             <div class="destination-summary mb-4">
                                 <div class="summary-section mb-4">
                                     <h4 class="summary-title">Overview</h4>
@@ -336,7 +332,7 @@ const TripGenerator = {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </section>
                 `;
             }
         });

@@ -5,6 +5,13 @@
     padding: 0 10px;
 }
 
+.destination-section {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
 @media (max-width: 768px) {
     .trip-results {
         padding: 0;
@@ -12,25 +19,29 @@
 
     .destination-section {
         margin: 0 0 1rem 0;
+        border-left: none;
+        border-right: none;
         width: 100%;
-        border-radius: 0;
+    }
+
+    .destination-section h3 {
+        padding: 10px;
+        margin: 0;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
     }
 
     .destination-content {
-        padding: 10px;
+        padding: 15px;
         width: 100%;
     }
 
     .detail-box {
         margin: 0 0 1rem 0;
-        border-radius: 0;
         width: 100%;
-        box-shadow: none;
-        border-bottom: 1px solid #dee2e6;
     }
 
     .detail-box:last-child {
-        border-bottom: none;
         margin-bottom: 0;
     }
 }
