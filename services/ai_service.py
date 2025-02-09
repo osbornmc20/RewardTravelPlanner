@@ -105,10 +105,28 @@ POINTS USAGE PRIORITY (STRICT ORDER):
    - Calculate if enough points for entire stay/flight
 2. Points Transfers to Programs
    - Transfer credit card points if direct points insufficient
-   - Verify transfer partnerships and consider bonuses
+   - ONLY use verified transfer partnerships below
+   - Consider current transfer bonuses
 3. Credit Card Travel Portal (LAST RESORT)
    - Only if options 1 and 2 not possible
    - Calculate at 2.0 cents per point value
+
+VERIFIED TRANSFER PARTNERSHIPS (STRICT - DO NOT SUGGEST OTHERS):
+Chase Ultimate Rewards:
+- Airlines: United, Southwest, Air Canada, British Airways, Air France/KLM, Virgin Atlantic, Emirates, Singapore Airlines, Iberia, Aer Lingus
+- Hotels: Hyatt, IHG, Marriott
+
+Amex Membership Rewards:
+- Airlines: Delta, Air Canada, British Airways, Air France/KLM, Emirates, JetBlue, Singapore Airlines, Virgin Atlantic, ANA, Cathay Pacific, Etihad, Hawaiian
+- Hotels: Hilton, Marriott, Choice
+
+Capital One:
+- Airlines: Air Canada, Air France/KLM, British Airways, Emirates, Singapore Airlines, Turkish Airlines, Virgin Red, TAP Air Portugal
+- Hotels: Wyndham, Choice
+
+Citi ThankYou:
+- Airlines: Air France/KLM, Emirates, Singapore Airlines, Virgin Atlantic, Turkish Airlines, Qatar Airways, Etihad, EVA Air
+- Hotels: Choice
 
 POINT VALUES (cpp):
 - Credit Cards: Chase 2.05, Amex 2.0, Capital One 1.85
@@ -220,13 +238,13 @@ IMPORTANT FORMATTING NOTES:
         try:
             # Set a timeout for the API call
             response = client.chat.completions.create(
-                model="chatgpt-4o-latest",  # Use the specified model name
+                model="gpt-4o-2024-08-06",  # Use latest optimized GPT-4 model
                 messages=[
                     {"role": "system", "content": self._get_system_prompt(trip_data)},
                     {"role": "user", "content": "Generate travel recommendations based on the provided parameters."}
                 ],
-                temperature=0.7,
-                max_tokens=4000
+                temperature=0.5,  # Lower temperature for more consistent formatting
+                max_tokens=8000  # Increased token limit for more detailed responses
             )
             
             try:

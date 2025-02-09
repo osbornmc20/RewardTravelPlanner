@@ -370,43 +370,157 @@ const TripGenerator = {
                 document.querySelector('.default-state').style.display = 'none';
                 document.querySelector('.selected-trip-summary').style.display = 'block';
                 
+                console.log('Continue Planning button clicked');
+                
                 // Get trip details from the selected option
-                const routeElement = optionContent.querySelector('.detail-box:first-of-type li strong');
-                const propertyElements = Array.from(optionContent.querySelectorAll('.detail-box li strong'));
-                const propertyElement = propertyElements.find(el => el.textContent === 'Property:');
+                const optionType = button.dataset.optionType;
+                const destinationSection = optionContent.closest('.destination-section');
                 
-                let destination = 'Selected Destination';
+                // Extract destination from the destination header
+                const destinationHeader = destinationSection.querySelector('.destination-header h3');
+                let destination = destinationHeader.textContent.replace(/Destination \d+ - /, '').trim();
+                
+                // Extract hotel and route from the content
                 let hotel = 'Selected Hotel';
+                let route = null;
                 
-                // Extract destination
-                if (routeElement && routeElement.textContent === 'Route:') {
-                    destination = routeElement.parentElement.textContent.split('Route:')[1].trim();
+                // Look for hotel info and route in all list items
+                const allListItems = optionContent.querySelectorAll('li');
+                allListItems.forEach(item => {
+                    const text = item.textContent.trim();
+                    
+                    // Extract hotel name from Property field
+                    if (text.startsWith('Property:')) {
+                        hotel = text.split('Property:')[1].trim();
+                    }
+                    
+                    // Extract route
+                    if (text.startsWith('Route:')) {
+                        route = text.split('Route:')[1].split('(')[0].trim();
+                    }
+                });
+                
+                // If we found a route, use it as the destination
+                if (route) {
+                    destination = route;
                 }
                 
-                // Extract hotel
-                if (propertyElement) {
-                    hotel = propertyElement.parentElement.textContent.split('Property:')[1].trim();
-                }
+                // Log what we found for debugging
+                console.log('Found trip details:', {
+                    destinationHeader: destinationHeader?.textContent,
+                    destination,
+                    hotel,
+                    route,
+                    optionType,
+                    allListItems: Array.from(allListItems).map(li => li.textContent)
+                });
 
                 // Get trip month and length
                 const tripMonth = document.querySelector('#travelMonths')?.value;
                 const tripLength = document.querySelector('#tripLength')?.value;
+                
+                // Log the extracted details for debugging
+                console.log('Extracted trip details:', {
+                    destination,
+                    hotel,
+                    tripMonth,
+                    tripLength,
+                    optionType
+                });
 
                 // Update trip summary
-                const tripSummary = document.querySelector('.trip-summary');
-                tripSummary.innerHTML = `
-                    <strong>${button.dataset.optionType === 'luxury' ? 'Luxury' : 'Economy'} Experience</strong><br>
-                    <strong>Route:</strong> ${destination}<br>
-                    <strong>Hotel:</strong> ${hotel}<br>
-                    <strong>Travel Month:</strong> ${tripMonth || ''}<br>
-                    <strong>Duration:</strong> ${tripLength ? `${tripLength} days` : ''}
-                `;
+                const tripSummary = document.querySelector('.selected-trip-summary');
+                if (tripSummary) {
+                    // Get the correct option type from the section header
+                    const optionSection = optionContent.closest('.option-section');
+                    const optionHeader = optionSection?.querySelector('.option-header');
+                    const isLuxury = optionHeader?.textContent.includes('Luxury');
+                    
+                    tripSummary.innerHTML = `
+                        <div class="selected-option-details">
+                            <h4>Selected Option:</h4>
+                            <p><strong>${isLuxury ? 'Luxury' : 'Economy'} Experience</strong></p>
+                            <p><strong>Route:</strong> ${destination}</p>
+                            <p><strong>Hotel:</strong> ${hotel}</p>
+                            <p><strong>Travel Month:</strong> ${tripMonth || ''}</p>
+                            <p><strong>Duration:</strong> ${tripLength ? `${tripLength} days` : ''}</p>
+                        </div>
+                        <div class="mindtrip-button-container text-center mt-4">
+                            <button id="mindtrip-btn" class="btn btn-primary">
+                                <i class="fas fa-plane-departure"></i> Continue Planning on MindTrip.ai
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Re-attach click handler for MindTrip button
+                    const mindTripBtn = document.getElementById('mindtrip-btn');
+                    if (mindTripBtn) {
+                        mindTripBtn.addEventListener('click', async () => {
+                            // Create the prompt
+                            const prompt = `I'm planning a ${tripLength}-day ${isLuxury ? 'luxury' : 'budget-friendly'} trip to ${destination} in ${tripMonth}, staying at ${hotel}. Please help me create a detailed day-by-day itinerary that includes:
+
+1. Activities and attractions that match the ${isLuxury ? 'luxury' : 'budget-conscious'} nature of my trip
+2. Restaurant recommendations for each day
+3. Transportation suggestions
+4. Any specific tips for my hotel area
+5. Estimated timing for each activity
+
+Please organize this by day (Day 1, Day 2, etc) and consider the local weather and best times for each activity.`;
+                            
+                            try {
+                                // Copy to clipboard
+                                await navigator.clipboard.writeText(prompt);
+                                
+                                // Create and show notification
+                                const notification = document.createElement('div');
+                                notification.className = 'alert alert-success position-fixed';
+                                notification.style.cssText = `
+                                    position: fixed;
+                                    bottom: 20px;
+                                    right: 20px;
+                                    z-index: 1000;
+                                    padding: 15px 25px;
+                                    border-radius: 5px;
+                                    background-color: #28a745;
+                                    color: white;
+                                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                    font-weight: 500;
+                                `;
+                                notification.innerHTML = `
+                                    <i class="fas fa-check-circle" style="font-size: 1.2em;"></i>
+                                    Trip Plan copied, opening MindTrip
+                                `;
+                                
+                                document.body.appendChild(notification);
+                                
+                                // Remove notification after 3 seconds
+                                setTimeout(() => {
+                                    notification.remove();
+                                    // Open MindTrip in a new tab
+                                    window.open('https://mindtrip.ai/chat', '_blank');
+                                }, 3000);
+                                
+                            } catch (error) {
+                                console.error('Error handling MindTrip integration:', error);
+                                // Show error notification
+                                const errorNotification = document.createElement('div');
+                                errorNotification.className = 'alert alert-danger position-fixed';
+                                errorNotification.style.bottom = '20px';
+                                errorNotification.style.right = '20px';
+                                errorNotification.style.zIndex = '1000';
+                                errorNotification.innerHTML = 'Error copying trip details';
+                                document.body.appendChild(errorNotification);
+                                setTimeout(() => errorNotification.remove(), 3000);
+                            }
+                        });
+                    }
+                }
                 
-                // Enable MindTrip button
-                document.getElementById('mindtrip-btn').disabled = false;
-                
-                // Scroll to MindTrip section
-                document.getElementById('mindtrip-integration').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Scroll to trip summary
+                tripSummary?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
         });
     },
@@ -415,7 +529,7 @@ const TripGenerator = {
         if (!section) return '';
         
         const lines = section.trim().split('\n');
-        let html = '<div class="option-content">';
+        let html = '<div class="option-content" data-trip-details="">';
         
         // Flight Details Box
         let flightDetails = '';

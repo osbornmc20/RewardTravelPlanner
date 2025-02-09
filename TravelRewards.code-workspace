@@ -1,0 +1,50 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/__pycache__": true,
+            "**/.pytest_cache": true,
+            "**/*.pyc": true,
+            ".DS_Store": true
+        },
+        "editor.formatOnSave": true,
+        "python.analysis.extraPaths": [
+            "./services",
+            "./models",
+            "./routes"
+        ],
+        "files.associations": {
+            "*.html": "html"
+        }
+    },
+    "launch": {
+        "configurations": [
+            {
+                "name": "Python: Flask",
+                "type": "python",
+                "request": "launch",
+                "module": "flask",
+                "env": {
+                    "FLASK_APP": "app.py",
+                    "FLASK_ENV": "development"
+                },
+                "args": [
+                    "run",
+                    "--port",
+                    "5037"
+                ]
+            }
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.vscode-pylance",
+            "formulahendry.code-runner"
+        ]
+    }
+}
