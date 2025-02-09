@@ -287,12 +287,12 @@ const TripGenerator = {
             if (economySection && luxurySection && destName !== 'Unknown Destination') {
                 resultsHtml += `
                     <div class="destination-section mb-4">
-                        <div class="destination-header" onclick="if(window.innerWidth <= 768) { this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show'); }">
+                        <div class="destination-header" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show');">
                             <h3>Destination ${index + 1} - ${destName}</h3>
                             <span class="toggle-icon">▼</span>
                         </div>
                         
-                        <div class="destination-content">
+                        <div class="destination-content${window.innerWidth <= 768 ? '' : ' show'}">
                             <div class="destination-summary mb-4">
                                 <div class="summary-section mb-4">
                                     <h4 class="summary-title">Overview</h4>
