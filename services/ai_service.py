@@ -238,13 +238,14 @@ IMPORTANT FORMATTING NOTES:
         try:
             # Set a timeout for the API call
             response = client.chat.completions.create(
-                model="gpt-4o-2024-08-06",  # Use latest optimized GPT-4 model
+                model="gpt-4-0125-preview",  # Use latest GPT-4 Turbo model
                 messages=[
                     {"role": "system", "content": self._get_system_prompt(trip_data)},
                     {"role": "user", "content": "Generate travel recommendations based on the provided parameters."}
                 ],
-                temperature=0.5,  # Lower temperature for more consistent formatting
-                max_tokens=8000  # Increased token limit for more detailed responses
+                temperature=0.7,  # Balanced temperature for creativity and consistency
+                max_tokens=4096,  # Standard token limit
+                timeout=60  # 60 second timeout
             )
             
             try:
