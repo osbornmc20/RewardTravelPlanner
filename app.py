@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import json
 from openai import OpenAI, RateLimitError, APIError, APIConnectionError
 from models import db, User, PointsProgram
-from services.ai_service import TravelPlanGenerator
+from services.ai_service import TravelPlanGenerator, TripValidationError
 
 # Load environment variables
 load_dotenv()
@@ -301,6 +301,13 @@ def generate_trip():
                 }), 500
                 
             return jsonify(result)
+            
+        except TripValidationError as e:
+            print(f"Trip validation error: {str(e)}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 400
             
         except RateLimitError:
             return jsonify({

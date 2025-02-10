@@ -227,7 +227,7 @@ For each day include:
             }
         });
     }
-});        });
+});
     }
 }
 
@@ -299,14 +299,3 @@ async function copyToClipboardAndNotify(text) {
         }, 3000);
     }
 }
-
-// Initialize MindTrip functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const mindTripBtn = document.getElementById('mindtrip-btn');
-    if (mindTripBtn) {
-        mindTripBtn.addEventListener('click', async () => {
-            const selectedOption = document.querySelector('.option-content.selected');
-            await handleMindTripClick(selectedOption);
-        });
-    }
-});

@@ -3,6 +3,11 @@ import os
 import re
 from openai import OpenAI
 from dotenv import load_dotenv
+
+class TripValidationError(Exception):
+    """Custom exception for trip validation errors."""
+    pass
+
 from flask_login import current_user
 from models import PointsProgram
 from flask import current_app
@@ -48,24 +53,13 @@ class TravelPlanGenerator:
                 
         special_requests = trip_data.get('preferences', 'None specified').strip()
         special_requests_emphasis = f"""
-⚠️ SPECIAL REQUESTS (PRIME DIRECTIVE - MUST BE FOLLOWED) ⚠️
+SPECIAL REQUESTS:
 {special_requests}
 
-These special requests are your HIGHEST PRIORITY. They override all other considerations except point balance limits.
-- If a request specifies certain regions/countries/cities, ONLY suggest destinations that match
-- If a request excludes certain types of places, NEVER suggest those places
-- If you're unsure if a destination meets ALL special requests, DO NOT suggest it
-- Treat these as strict requirements, not preferences
-
-Example: If the request says "Only show European destinations":
-✓ DO suggest: Paris, France
-✓ DO suggest: Rome, Italy
-✓ DO suggest: Barcelona, Spain
-✗ DO NOT suggest: Tokyo, Japan
-✗ DO NOT suggest: New York, USA
-✗ DO NOT suggest: Sydney, Australia
-
-Your response will be REJECTED if it includes destinations that don't match the special requests.
+These special requests must be followed for all destination suggestions:
+- If specific regions/countries/cities are requested, only suggest matching destinations
+- If certain places are excluded, do not suggest them
+- All destinations must satisfy every special request
 """
 
         return f"""You are an expert travel planner specializing in credit card & loyalty points optimization. Generate travel recommendations based on:
@@ -82,18 +76,14 @@ TRIP REQUIREMENTS:
 - Maximum Flight Length: {trip_data['max_flight_length']} hours
 - Direct Flights Only: {'Yes' if trip_data.get('direct_flights') else 'No'}
 
-CRITICAL REQUIREMENTS:
-1. Special Requests are your PRIME DIRECTIVE - they must be followed exactly
-2. Each destination MUST match ALL special requests - no exceptions
-3. All point calculations must be accurate and within available balances
-4. Economy and luxury options must be different
-5. Luxury options must include premium economy, business or first class flights
-6. Fare Type must be clearly specified for all flights
-7. If you're unsure if a destination meets ALL special requests, choose a different one
-8. ALWAYS show exactly 3 destinations, numbered 1, 2, and 3
-9. ALL point calculations must be for ROUND TRIP flights PER PERSON
-10. NEVER exceed available point balances
-11. Consider seasonal factors for each destination:
+REQUIREMENTS:
+1. All point calculations must be accurate and within available balances
+2. Economy and luxury options must be different
+3. Luxury options must include premium economy, business or first class flights
+4. Fare Type must be clearly specified for all flights
+5. Show exactly 3 destinations that match all special requests
+6. All point calculations must be for round trip flights per person
+7. Consider seasonal factors for each destination:
     - Weather patterns and best times to visit
     - Peak vs. off-peak travel seasons
     - Local festivals and events

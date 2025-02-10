@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/trip_results.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<script type="module" src="{{ url_for('static', filename='js/modules/how_it_works.js') }}"></script>
 <style>
 .trip-type-box {
     border: 2px solid #0d6efd;
@@ -250,6 +249,9 @@
     {% include 'trip_info.html' %}
 </div>
 
+    <!-- Trip Results Section -->
+    <div id="trip-results" class="mt-4"></div>
+
     <!-- MindTrip Integration Section -->
     <div id="mindtrip-integration" class="card mb-4">
         <div class="card-header">
@@ -403,7 +405,6 @@ Please create a day-by-day itinerary with:
 2. ${optionType === 'luxury' ? 'Upscale' : 'Value-conscious'} restaurant recommendations
 3. Transportation tips and best times to visit
 4. Special events in ${tripMonth}
-
 5. Local experiences
 
 Consider:

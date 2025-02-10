@@ -94,7 +94,10 @@ const TripGenerator = {
 
     async sendTripRequest(tripData) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout
+        // Increase timeout to 2 minutes if there are multiple special requests
+        const hasMultipleRequests = tripData.preferences && tripData.preferences.split('\n').length > 1;
+        const timeout = hasMultipleRequests ? 180000 : 120000;  // 3 minutes for multiple requests, 2 minutes for single
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
 
         try {
             const response = await fetch('/generate_trip', {
@@ -255,9 +258,9 @@ const TripGenerator = {
             }
             
             // Find destination summary and recommendations sections
-            const summaryStartIndex = lines.findIndex(l => l === 'DESTINATION SUMMARY:');
+            const summaryStartIndex = lines.findIndex(l => l === 'DESTINATION SUMMARY:' || l === 'Overview:');
             const recommendationsStartIndex = lines.findIndex(l => l === 'Why We Recommend This Destination:');
-            const optionsStartIndex = lines.findIndex(l => l.includes('OPTION A - ECONOMY EXPERIENCE'));
+            const optionsStartIndex = lines.findIndex(l => l.includes('OPTION A - ECONOMY EXPERIENCE') || l === 'Economy Experience:');
             
             let destinationSummary = '';
             let recommendations = '';
@@ -281,7 +284,12 @@ const TripGenerator = {
             }
             
             // Split into economy and luxury options
-            const [economySection = '', luxurySection = ''] = content.split(/OPTION B - LUXURY EXPERIENCE/i);
+            const luxuryStart = content.includes('OPTION B - LUXURY EXPERIENCE') ? 
+                content.indexOf('OPTION B - LUXURY EXPERIENCE') : 
+                content.indexOf('Luxury Experience:');
+            
+            const economySection = content.substring(0, luxuryStart).trim();
+            const luxurySection = content.substring(luxuryStart).trim();
             
             // Only create the destination section if we have valid data
             if (economySection && luxurySection && destName !== 'Unknown Destination') {
