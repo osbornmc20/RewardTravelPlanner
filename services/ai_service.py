@@ -15,16 +15,13 @@ from flask import current_app
 # Load environment variables from .env file
 load_dotenv()
 
-# Initialize OpenAI client
-api_key = os.getenv('OPENAI_API_KEY')
-if not api_key:
-    raise ValueError("OpenAI API key not found in environment variables")
-
-client = OpenAI(api_key=api_key)
-
 class TravelPlanGenerator:
     def __init__(self):
-        pass
+        # Initialize OpenAI client
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise ValueError("OpenAI API key not found in environment variables")
+        self.client = OpenAI(api_key=api_key)
         
     def _get_system_prompt(self, trip_data: Dict) -> str:
         """Construct the system prompt for the GPT model."""
@@ -81,7 +78,7 @@ REQUIREMENTS:
 2. Economy and luxury options must be different
 3. Luxury options must include premium economy, business or first class flights
 4. Fare Type must be clearly specified for all flights
-5. Show exactly 3 destinations that match all special requests
+5. Show exactly 2 destinations that match all special requests
 6. All point calculations must be for round trip flights per person
 7. Consider seasonal factors for each destination:
     - Weather patterns and best times to visit
@@ -130,18 +127,28 @@ DESTINATION SUMMARY:
 [2-3 sentences about why this destination is an excellent match for the requested travel time and trip style]
 
 Why We Recommend This Destination:
-1. Your Requirements: 
-   - [List how this matches each of the user's special requests]
-   - [Address any specific preferences mentioned]
+1. Requirements Match:
+   ✓/✗ [Requirement 1]: [Brief explanation]
+   ✓/✗ [Requirement 2]: [Brief explanation]
+   ✓/✗ [Requirement 3]: [Brief explanation]
 
-2. Seasonal Sweet Spot:
-   - Weather: [Current season's weather patterns and why they're ideal]
-   - Local Events: [Key festivals, events, or activities during these months]
+2. Seasonal Analysis:
+   🌤️ Weather Conditions:
+      • [Current season's weather patterns]
+      • [Why it's ideal for travel]
    
-3. Points Strategy:
-   - Award Availability: [Current patterns for this route/destination]
-   - Peak/Off-Peak: [How timing affects point redemptions]
-   - Special Opportunities: [Any point transfer bonuses or sweet spot redemptions]
+   🎉 Local Highlights:
+      • [Key festivals and events]
+      • [Special seasonal activities]
+   
+3. Points Optimization:
+   🎯 Award Availability:
+      • [Current booking patterns]
+      • [Best booking windows]
+   
+   💰 Value Opportunities:
+      • [Transfer bonuses or sweet spots]
+      • [Special redemption options]
 
 OPTION A - ECONOMY EXPERIENCE
 Flight Details:
@@ -187,7 +194,7 @@ Value Analysis:
   * Hotel: [X points] ([Program name])
 - Dollar Value Saved: [Approx. $X]
 
-[Repeat exact format for DESTINATION 2 and DESTINATION 3]
+[Repeat exact format for DESTINATION 2]
 
 IMPORTANT FORMATTING NOTES:
 1. Do NOT use any markdown formatting (no **, *, or other symbols)
@@ -210,7 +217,7 @@ IMPORTANT FORMATTING NOTES:
 
     def _get_user_prompt(self, trip_data: Dict) -> str:
         """Construct the user prompt for the GPT model."""
-        return """Start your response IMMEDIATELY with 'DESTINATION 1' without any introduction or preamble. Generate exactly 3 destinations following the format above. Remember:
+        return """Start your response IMMEDIATELY with 'DESTINATION 1' without any introduction or preamble. Generate exactly 2 destinations following the format above. Remember:
 
 1. Start DIRECTLY with 'DESTINATION 1 - [City, Country]:'
 2. Special Requests are your PRIME DIRECTIVE - follow them exactly
@@ -225,36 +232,52 @@ IMPORTANT FORMATTING NOTES:
 
     def generate_travel_plan(self, trip_data: Dict) -> Dict:
         """Generate a travel plan based on user input."""
-        try:
-            # Set a timeout for the API call
-            response = client.chat.completions.create(
-                model="gpt-4o-2024-08-06",  # Use latest optimized GPT-4 model
-                messages=[
-                    {"role": "system", "content": self._get_system_prompt(trip_data)},
-                    {"role": "user", "content": "Generate travel recommendations based on the provided parameters."}
-                ],
-                temperature=0.5,  # Lower temperature for more consistent formatting
-                max_tokens=8000  # Increased token limit for more detailed responses
-            )
-            
+        max_retries = 2
+        current_retry = 0
+        last_error = None
+
+        while current_retry < max_retries:
             try:
-                content = response.choices[0].message.content.strip()
-                
-                # Basic validation of the response format
-                if not content:
-                    raise ValueError("No travel plan was generated. Please try again - it usually works on the second try!")
+                # Set a timeout for the API call
+                response = self.client.chat.completions.create(
+                    model="chatgpt-4o-latest",  # Use latest O4 model for more reliable responses
+                    messages=[
+                        {"role": "system", "content": self._get_system_prompt(trip_data)},
+                        {"role": "user", "content": "Generate travel recommendations based on the provided parameters."}
+                    ],
+                    temperature=0.7,  # Slightly higher temperature for more diverse suggestions
+                    max_tokens=4000,
+                    timeout=120  # 2 minute timeout
+                )
+            
+                try:
+                    content = response.choices[0].message.content.strip()
                     
-                return {
-                    'success': True,
-                    'result': content
-                }
+                    # Basic validation of the response format
+                    if not content:
+                        raise ValueError("Empty response received")
+                        
+                    return {
+                        'success': True,
+                        'result': content
+                    }
+                    
+                except (AttributeError, IndexError) as e:
+                    print(f"Error parsing AI response: {str(e)}")
+                    raise ValueError("Error parsing AI response")
+                    
+            except Exception as e:
+                last_error = e
+                current_retry += 1
+                print(f"Attempt {current_retry} failed: {str(e)}")
+                if current_retry < max_retries:
+                    print(f"Retrying... ({current_retry}/{max_retries})")
+                    continue
                 
-            except (AttributeError, IndexError) as e:
-                print(f"Error parsing AI response: {str(e)}")
-                raise ValueError("A temporary error occurred while processing the AI response. Please try again - it usually works on the second try!")
-                
-        except Exception as e:
-            print(f"Error in generate_travel_plan: {str(e)}")
-            if "timeout" in str(e).lower():
-                raise TimeoutError("The AI took a bit too long to respond. Please try again - it usually works on the second try!")
-            raise
+                # If we've exhausted all retries, raise the last error
+                if isinstance(last_error, TimeoutError):
+                    raise TimeoutError("The request is taking longer than expected. Please try again.")
+                elif isinstance(last_error, ValueError):
+                    raise ValueError(str(last_error))
+                else:
+                    raise Exception("A temporary error occurred. Please try again.")

@@ -314,6 +314,11 @@ def generate_trip():
                 'success': False,
                 'error': 'The service is briefly busy. Please try again in a few moments - it usually works on the second try!'
             }), 429
+        except APIConnectionError:
+            return jsonify({
+                'success': False,
+                'error': 'Connection to the AI service failed. Please try again in a few moments.'
+            }), 502
         except APIError:
             return jsonify({
                 'success': False,
