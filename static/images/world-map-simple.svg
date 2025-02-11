@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="600" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- World Map Base - Simplified continents -->
+    <g fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.25)" stroke-width="1">
+        <!-- North America -->
+        <path d="M280,30 C310,20 350,25 380,40 C410,55 430,80 440,110 C450,140 445,170 430,195 C415,220 390,230 360,225 C330,220 310,200 300,170 C290,140 285,110 280,80 C275,50 250,40 280,30Z"/>
+        
+        <!-- Europe -->
+        <path d="M580,50 C610,40 640,45 660,60 C680,75 690,100 685,125 C680,150 665,170 640,175 C615,180 590,170 580,145 C570,120 565,90 580,50Z"/>
+        
+        <!-- Asia -->
+        <path d="M700,40 C740,30 780,35 820,50 C860,65 890,90 900,120 C910,150 905,180 890,205 C875,230 850,240 820,235 C790,230 770,210 760,180 C750,150 755,120 700,40Z"/>
+        
+        <!-- Africa -->
+        <path d="M580,150 C610,140 640,145 660,160 C680,175 690,200 685,225 C680,250 665,270 640,275 C615,280 590,270 580,245 C570,220 565,190 580,150Z"/>
+        
+        <!-- South America -->
+        <path d="M320,230 C350,220 380,225 400,240 C420,255 430,280 425,305 C420,330 405,350 380,355 C355,360 330,350 320,325 C310,300 305,270 320,230Z"/>
+        
+        <!-- Australia -->
+        <path d="M850,270 C880,260 910,265 930,280 C950,295 960,320 955,345 C950,370 935,390 910,395 C885,400 860,390 850,365 C840,340 835,310 850,270Z"/>
+    </g>
+
+    <!-- Location Pins - Using a teardrop shape -->
+    <g>
+        <!-- North America Pins -->
+        <g transform="translate(320,80)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+        <g transform="translate(380,120)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+
+        <!-- Europe Pins -->
+        <g transform="translate(600,90)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+        <g transform="translate(640,120)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+
+        <!-- Asia Pins -->
+        <g transform="translate(780,100)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+        <g transform="translate(850,150)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+
+        <!-- Africa Pins -->
+        <g transform="translate(600,200)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+
+        <!-- South America Pins -->
+        <g transform="translate(350,280)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+
+        <!-- Australia Pins -->
+        <g transform="translate(890,320)">
+            <path d="M0,0 C-3,-8 -3,-15 0,-20 C3,-15 3,-8 0,0" fill="#2193b0"/>
+            <circle cx="0" cy="0" r="2" fill="#2193b0"/>
+        </g>
+    </g>
+</svg>
