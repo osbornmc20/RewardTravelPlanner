@@ -229,6 +229,51 @@ const TripGenerator = {
                 padding-bottom: 10px;
                 margin-bottom: 15px;
             }
+            .mindtrip-guide {
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                border: 1px solid #e9ecef;
+                height: 100%;
+                margin-bottom: 1rem;
+            }
+            .steps-container {
+                padding: 10px;
+            }
+            .step {
+                display: flex;
+                align-items: start;
+                gap: 15px;
+                padding: 10px;
+                border-radius: 6px;
+                transition: all 0.3s ease;
+            }
+            .step:hover {
+                background-color: #e9ecef;
+            }
+            .step-number {
+                background-color: #3498db;
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                flex-shrink: 0;
+            }
+            .step-content {
+                flex-grow: 1;
+            }
+            .mindtrip-btn {
+                padding: 12px 24px;
+                font-size: 1.1rem;
+                transition: all 0.3s ease;
+            }
+            .mindtrip-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+            }
         `;
         document.head.appendChild(style);
         console.log('Handling trip response:', data);
@@ -445,18 +490,70 @@ const TripGenerator = {
                     const isLuxury = optionHeader?.textContent.includes('Luxury');
                     
                     tripSummary.innerHTML = `
-                        <div class="selected-option-details">
-                            <h4>Selected Option:</h4>
-                            <p><strong>${isLuxury ? 'Luxury' : 'Economy'} Experience</strong></p>
-                            <p><strong>Route:</strong> ${destination}</p>
-                            <p><strong>Hotel:</strong> ${hotel}</p>
-                            <p><strong>Travel Month:</strong> ${tripMonth || ''}</p>
-                            <p><strong>Duration:</strong> ${tripLength ? `${tripLength} days` : ''}</p>
-                        </div>
-                        <div class="mindtrip-button-container text-center mt-4">
-                            <button id="mindtrip-btn" class="btn btn-primary">
-                                <i class="fas fa-plane-departure"></i> Continue Planning on MindTrip.ai
-                            </button>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Build your Itinerary with MindTrip.ai</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Trip Details Column -->
+                                    <div class="col-md-6">
+                                        <div class="mindtrip-guide p-3">
+                                            <h5 class="text-primary mb-3"><i class="fas fa-suitcase"></i> Selected Option</h5>
+                                            <div class="selected-details">
+                                                <div class="step mb-3">
+                                                    <div class="step-content w-100">
+                                                        <strong>${isLuxury ? 'Luxury' : 'Economy'} Experience</strong>
+                                                        <div class="mt-3">
+                                                            <p class="mb-2"><strong>Route:</strong> ${destination}</p>
+                                                            <p class="mb-2"><strong>Hotel:</strong> ${hotel}</p>
+                                                            <p class="mb-2"><strong>Travel Month:</strong> ${tripMonth || ''}</p>
+                                                            <p class="mb-2"><strong>Duration:</strong> ${tripLength ? `${tripLength} days` : ''}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Instructions Column -->
+                                    <div class="col-md-6">
+                                        <div class="mindtrip-guide p-3">
+                                            <h5 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Quick Guide</h5>
+                                            <div class="steps-container">
+                                                <div class="step mb-3">
+                                                    <div class="step-number">1</div>
+                                                    <div class="step-content">
+                                                        <strong>Click the blue button below</strong>
+                                                        <small class="d-block text-muted">This will open MindTrip.ai in a new tab</small>
+                                                    </div>
+                                                </div>
+                                                <div class="step mb-3">
+                                                    <div class="step-number">2</div>
+                                                    <div class="step-content">
+                                                        <strong>Paste into MindTrip Chat</strong>
+                                                        <small class="d-block text-muted">Your trip prompt will be added to your clipboard</small>
+                                                    </div>
+                                                </div>
+                                                <div class="step">
+                                                    <div class="step-number">3</div>
+                                                    <div class="step-content">
+                                                        <strong>Start Planning!</strong>
+                                                        <small class="d-block text-muted">MindTrip will help build your full itinerary</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Button centered at bottom -->
+                                <div class="text-center mt-4">
+                                    <button id="mindtrip-btn" class="btn btn-primary btn-lg mindtrip-btn">
+                                        <i class="fas fa-plane-departure me-2"></i> Continue Planning on MindTrip.ai
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     `;
                     
@@ -554,6 +651,16 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
 
         // Helper function to format content with bold keywords
         const formatContent = (content) => {
+            // Format requirements with proper spacing
+            if (content.includes('✓')) {
+                return `<div class="requirement-item">${content}</div>`;
+            }
+
+            // Add extra spacing before numbered sections
+            if (content.match(/^\d+\./)) {
+                return `<div class="numbered-section">${content}</div>`;
+            }
+
             // Replace 'round trip' with 'RT'
             content = content.replace(/round trip/gi, 'RT');
             
@@ -574,16 +681,22 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
                 return '';
             }
 
-            // Bold key elements
-            const keywords = [
-                'Route:', 'Airline:', 'Points Program:', 'Hotel:', 
-                'Points Used:', 'Total Points Needed:', 'Property:', 'Property Details:',
-                'Points Breakdown:', 'Dollar Value Saved:', 'Cash value:', 'Points value:'
-            ];
-            keywords.forEach(keyword => {
-                content = content.replace(keyword, `<strong>${keyword}</strong>`);
-            });
-
+            // Convert any <strong> tags to <b> for consistency
+            content = content.replace(/<strong>/g, '<b>').replace(/<\/strong>/g, '</b>');
+            
+            // If content already has bold tags, return it
+            if (content.includes('<b>')) {
+                return content;
+            }
+            
+            // Add bold tags to any remaining unbold headers
+            if (content.includes(':')) {
+                const parts = content.split(':');
+                if (parts.length === 2) {
+                    return `<b>${parts[0]}</b>:${parts[1]}`;
+                }
+            }
+            
             return content;
         };
         

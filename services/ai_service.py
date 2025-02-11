@@ -25,6 +25,7 @@ class TravelPlanGenerator:
         
     def _get_system_prompt(self, trip_data: Dict) -> str:
         """Construct the system prompt for the GPT model."""
+        # Format must be exact for frontend parsing
         points_balances = {}
         
         # Get points balances from database for authenticated users
@@ -127,10 +128,15 @@ DESTINATION SUMMARY:
 [2-3 sentences about why this destination is an excellent match for the requested travel time and trip style]
 
 Why We Recommend This Destination:
+
 1. Requirements Match:
-   ✓/✗ [Requirement 1]: [Brief explanation]
-   ✓/✗ [Requirement 2]: [Brief explanation]
-   ✓/✗ [Requirement 3]: [Brief explanation]
+
+✓ [Requirement 1]: [Brief explanation]
+
+✓ [Requirement 2]: [Brief explanation]
+
+✓ [Requirement 3]: [Brief explanation]
+
 
 2. Seasonal Analysis:
    🌤️ Weather Conditions:
@@ -140,7 +146,10 @@ Why We Recommend This Destination:
    🎉 Local Highlights:
       • [Key festivals and events]
       • [Special seasonal activities]
-   
+
+
+
+<br><br>
 3. Points Optimization:
    🎯 Award Availability:
       • [Current booking patterns]
@@ -152,33 +161,31 @@ Why We Recommend This Destination:
 
 OPTION A - ECONOMY EXPERIENCE
 Flight Details:
-- Route: [Airport to destination]
-- Airline: [Airline name]
-- Points Program: [Program name]
-- Points Used: [X points round trip per person]
-- Fare Type: Economy
-- Award Availability: [Typical availability for these months]
+- <b>Route</b>: [Airport to destination]
+- <b>Airline</b>: [Airline name]
+- <b>Points Program</b>: [Program name]
+- <b>Points Used</b>: [X points RT per person]
+- <b>Fare Class</b>: Economy (Main Cabin)
 
 Hotel Option:
-- Property: [Hotel name]
-- Points Program: [Program name]
-- Total Points Needed: [X points (X points per night)]
-- Property Details: [Brief description]
+- <b>Property</b>: [Hotel name]
+- <b>Points Program</b>: [Program name]
+- <b>Total Points Needed</b>: [X points (X points per night)]
+- <b>Property Details</b>: [Brief description]
 
 Value Analysis:
-- Points Used: [Total points used]
-- Points Breakdown:
-  * Airline: [X points] ([Program name])
-  * Hotel: [X points] ([Program name])
-- Dollar Value Saved: [Approx. $X]
+- <b>Total Points Used</b>: [Total points used]
+- <b>Airline</b>: [X points] ([Program name])
+- <b>Hotel</b>: [X points] ([Program name])
+- <b>Dollar Value Saved</b>: [Approx. $X]
 
 OPTION B - LUXURY EXPERIENCE
 Flight Details:
 - Route: [Airport to destination]
 - Airline: [Airline name]
 - Points Program: [Program name]
-- Points Used: [X points round trip per person]
-- Fare Type: [Premium Economy/Business/First]
+- <b>Points Used</b>: [X points round trip per person]
+- <b>Fare Class</b>: [Premium Economy/Business/First] (specify exact cabin)
 - Award Availability: [Typical availability for these months]
 
 Hotel Option:
@@ -188,11 +195,10 @@ Hotel Option:
 - Property Details: [Brief luxury description]
 
 Value Analysis:
-- Points Used: [Total points used]
-- Points Breakdown:
-  * Airline: [X points] ([Program name])
-  * Hotel: [X points] ([Program name])
-- Dollar Value Saved: [Approx. $X]
+- <b>Total Points Used</b>: [Total points used]
+- <b>Airline</b>: [X points] ([Program name])
+- <b>Hotel</b>: [X points] ([Program name])
+- <b>Dollar Value Saved</b>: [Approx. $X]
 
 [Repeat exact format for DESTINATION 2]
 
@@ -223,10 +229,10 @@ IMPORTANT FORMATTING NOTES:
 2. Special Requests are your PRIME DIRECTIVE - follow them exactly
 3. Each destination MUST match ALL special requests - no exceptions
 4. All point calculations must be accurate and within available balances
-5. Economy and luxury options must be different
-6. Luxury options must include premium economy, business or first class flights
-7. Fare Type must be clearly specified for all flights
-8. If you're unsure if a destination meets ALL special requests, choose a different one
+5. Format 'Points Used' and 'Fare Class' with double asterisks for bold text
+6. Format 'Total Points Used' and 'Points Breakdown' with double asterisks
+7. Under Points Breakdown, show both Airline and Hotel points indented
+8. Use exact format: **Points Used**: [value] and **Fare Class**: [value]
 9. ALL point calculations must be for ROUND TRIP flights PER PERSON
 10. NEVER exceed available point balances"""
 
