@@ -291,6 +291,45 @@
     padding: 1.5rem;
 }
 
+/* Requirements list formatting */
+.destination-content > div > div:first-child {
+    white-space: pre-line !important;
+}
+
+.destination-content > div > div:first-child p {
+    display: block;
+    margin-bottom: 0.75rem;
+    white-space: pre-line !important;
+}
+
+/* Force line breaks after check marks */
+.destination-content > div > div:first-child p::after {
+    content: '\A';
+    white-space: pre;
+}
+
+/* Numbered sections spacing */
+.destination-content > div > div {
+    margin-bottom: 4rem;
+    padding-bottom: 4rem;
+    border-bottom: 1px solid #eee;
+}
+
+/* Target the numbered sections specifically */
+.destination-content > div > div:nth-child(n+2) {
+    margin-top: 8rem;
+    padding-top: 2rem;
+}
+
+.destination-content h2:not(:first-child) {
+    margin-top: 8rem;
+}
+
+/* Ensure proper spacing between sections */
+.destination-content > div > div:last-child {
+    margin-bottom: 0;
+}
+
 .destination-content.show {
     display: block;
 }
