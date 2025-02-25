@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Top Hotel Rankings - Go Ask Marshall{% endblock %}
+
+{% block meta_description %}Discover our curated list of the best hotels worldwide, including top picks in the USA, Mexico, and across the globe. Find detailed reviews and ratings based on personal experience.{% endblock %}
+
+{% block meta_keywords %}hotel rankings, luxury hotels, best hotels USA, best hotels Mexico, hotel reviews, travel accommodations{% endblock %}
+
+{% block head %}
+<!-- Canonical URL -->
+<link rel="canonical" href="https://goaskmarshall.com/hotel-rankings">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Top Hotel Rankings",
+    "description": "Curated list of the best hotels in the USA, Mexico, and worldwide, with personal ratings and reviews.",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Go Ask Marshall",
+        "url": "https://goaskmarshall.com"
+    },
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://goaskmarshall.com"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Hotel Rankings",
+            "item": "https://goaskmarshall.com/hotel-rankings"
+        }]
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<main class="container hotel-rankings-container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="Breadcrumb" class="breadcrumbs">
+        <ol>
+            <li><a href="/">Home</a></li>
+            <li aria-current="page">Hotel Rankings</li>
+        </ol>
+    </nav>
+
+    <h1 class="section-title">Our Hotel Rankings</h1>
+    
+    <div class="rankings-info">
+        <p>Welcome to our curated collection of exceptional hotels from around the world. Every hotel on this list has been personally experienced by us, ensuring authentic, first-hand recommendations. We regularly update these rankings quarterly to reflect our most recent stays and discoveries.</p>
+        <p>Our ratings are based on overall experience, considering factors like service quality, room comfort, location, and value for money. We believe in transparent reviews – we only rank hotels we've actually stayed in.</p>
+    </div>
+
+
+    <!-- USA Hotels Section -->
+    <section class="hotel-section" id="usa-hotels">
+        <div class="section-header" data-toggle="collapse" data-target="#usa-hotels-content" aria-expanded="true">
+            <h2 class="section-subtitle">
+                <i class="fas fa-flag-usa"></i>
+                Top 10 Hotels in the USA
+            </h2>
+            <i class="fas fa-chevron-down mobile-toggle"></i>
+        </div>
+        <div id="usa-hotels-content" class="collapse show">
+            <div class="hotel-grid usa-hotels-grid">
+                <!-- Hotels will be dynamically populated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Mexico Hotels Section -->
+    <section class="hotel-section" id="mexico-hotels">
+        <div class="section-header" data-toggle="collapse" data-target="#mexico-hotels-content" aria-expanded="true">
+            <h2 class="section-subtitle">
+                <i class="fas fa-sun"></i>
+                Top 10 Hotels in Mexico
+            </h2>
+            <i class="fas fa-chevron-down mobile-toggle"></i>
+        </div>
+        <div id="mexico-hotels-content" class="collapse show">
+            <div class="hotel-grid mexico-hotels-grid">
+                <!-- Hotels will be dynamically populated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Rest of World Hotels Section -->
+    <section class="hotel-section" id="world-hotels">
+        <div class="section-header" data-toggle="collapse" data-target="#world-hotels-content" aria-expanded="true">
+            <h2 class="section-subtitle">
+                <i class="fas fa-globe-americas"></i>
+                Top 10 Hotels Worldwide
+            </h2>
+            <i class="fas fa-chevron-down mobile-toggle"></i>
+        </div>
+        <div id="world-hotels-content" class="collapse show">
+            <div class="hotel-grid world-hotels-grid">
+                <!-- Hotels will be dynamically populated here -->
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/hotel-rankings.js') }}" defer></script>
+{% endblock %}
