@@ -36,7 +36,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/trip_planner.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/recommendations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hotel-rankings.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/travel-guides.css') }}">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -56,9 +57,15 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link primary-nav-link" href="{{ url_for('recommendations') }}">
+                        <a class="nav-link primary-nav-link" href="{{ url_for('travel_guides') }}">
                             <i class="fas fa-star"></i>
-                            Our Reviews
+                            Travel Guides
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link primary-nav-link" href="{{ url_for('hotel_rankings') }}">
+                            <i class="fas fa-hotel"></i>
+                            Hotel Rankings
                         </a>
                     </li>
                 </ul>

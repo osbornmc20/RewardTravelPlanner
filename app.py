@@ -384,10 +384,10 @@ def test_static():
         'css_path': url_for('static', filename='css/trip_planner.css')
     })
 
-# Recommendations routes
-@app.route('/recommendations')
-def recommendations():
-    return render_template('recommendations.html')
+# Travel Guides routes
+@app.route('/travel-guides')
+def travel_guides():
+    return render_template('travel-guides.html')
 
 @app.route('/robots.txt')
 def robots():
@@ -399,7 +399,8 @@ def sitemap():
     
     # Add main pages
     sitemap.add_url('/', priority=1.0, changefreq='daily')
-    sitemap.add_url('/recommendations', priority=0.9, changefreq='weekly')
+    sitemap.add_url('/travel-guides', priority=0.9, changefreq='weekly')
+    sitemap.add_url('/hotel-rankings', priority=0.9, changefreq='monthly')
     
     # Add guide pages with their slugs
     guides = [
@@ -416,9 +417,9 @@ def sitemap():
     response.headers['Content-Type'] = 'application/xml'
     return response
 
-@app.route('/api/recommendations')
-def get_recommendations():
-    recommendations = [
+@app.route('/api/travel-guides')
+def get_travel_guides():
+    guides = [
         {
             "title": "Best lesser-known Mexican beach towns",
             "location": "Mexico",
@@ -452,7 +453,37 @@ def get_recommendations():
             "places": "10 days"
         }
     ]
-    return jsonify(recommendations)
+    return jsonify(guides)
+
+@app.route('/hotel-rankings')
+def hotel_rankings():
+    return render_template('hotel-rankings.html')
+
+@app.route('/api/hotel-rankings')
+def get_hotel_rankings():
+    import csv
+    import os
+    
+    hotels = []
+    csv_file = os.path.join(app.root_path, 'data', 'Hotel Reviews.csv')
+    
+    with open(csv_file, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            hotels.append({
+                'name': row['Hotel Name'],
+                'city': row['City'],
+                'country': row['Country'],
+                'category': row['Category'],
+                'priceRange': row['Price Range'],
+                'airportDistance': row['Distance from\nAirport'],
+                'hasStayed': row['Have I \nStayed? (Y/N)'].strip().upper() == 'Y',
+                'rating': float(row['My Rating']),
+                'notes': row['Notes'],
+                'website': ''  # We'll need to add this to the CSV
+            })
+    
+    return jsonify(hotels)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5037)
