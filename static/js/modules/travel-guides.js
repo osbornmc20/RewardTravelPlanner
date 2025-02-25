@@ -1,6 +1,6 @@
-class RecommendationsModule {
+class TravelGuidesModule {
     constructor() {
-        this.container = document.querySelector('.recommendations-grid');
+        this.container = document.querySelector('.travel-guides-grid');
         this.recommendations = [];
         this.init();
     }
@@ -11,7 +11,7 @@ class RecommendationsModule {
 
     loadRecommendations() {
         // This will be replaced with actual data from the backend
-        fetch('/api/recommendations')
+        fetch('/api/travel-guides')
             .then(response => response.json())
             .then(data => {
                 this.recommendations = data;
@@ -50,18 +50,18 @@ class RecommendationsModule {
         };
         
         return `
-            <article class="recommendation-card" itemscope itemtype="https://schema.org/TravelGuide">
+            <article class="travel-guide-card" itemscope itemtype="https://schema.org/TravelGuide">
                 <script type="application/ld+json">
                     ${JSON.stringify(structuredData)}
                 </script>
                 <a href="${recommendation.url}" 
                    target="_blank" 
-                   class="recommendation-link"
+                   class="travel-guide-link"
                    aria-label="Read more about ${recommendation.title}"
                    itemprop="url">
                     <img src="${thumbnailPath}" 
                          alt="Travel guide for ${recommendation.location}" 
-                         class="recommendation-image"
+                         class="travel-guide-image"
                          loading="lazy"
                          onload="this.classList.add('loaded')"
                          srcset="${thumbnailPath} 300w,
@@ -70,9 +70,9 @@ class RecommendationsModule {
                                 (max-width: 1200px) 50vw,
                                 33vw"
                          itemprop="image">
-                    <div class="recommendation-content">
-                        <h2 class="recommendation-title" itemprop="name">${recommendation.title}</h2>
-                        <div class="recommendation-location" aria-label="Location">
+                    <div class="travel-guide-content">
+                        <h2 class="travel-guide-title" itemprop="name">${recommendation.title}</h2>
+                        <div class="travel-guide-location" aria-label="Location">
                             <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
                             <span itemprop="about" itemscope itemtype="https://schema.org/Place">
                                 <span itemprop="name">${recommendation.location}</span>
@@ -87,5 +87,5 @@ class RecommendationsModule {
 
 // Initialize the module
 document.addEventListener('DOMContentLoaded', () => {
-    new RecommendationsModule();
+    new TravelGuidesModule();
 });

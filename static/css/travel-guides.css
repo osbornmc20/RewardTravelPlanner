@@ -1,4 +1,4 @@
-.recommendations-container {
+.travel-guides-container {
     padding: 2rem 0;
 }
 
@@ -43,20 +43,20 @@
     font-weight: 500;
 }
 
-.recommendations-grid {
+.travel-guides-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
 }
 
-.recommendation-card {
+.travel-guide-card {
     border-radius: 12px;
     overflow: hidden;
     background: white;
 }
 
-.recommendation-link {
+.travel-guide-link {
     display: block;
     text-decoration: none;
     color: inherit;
@@ -64,30 +64,30 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.recommendation-link:hover,
-.recommendation-link:focus {
+.travel-guide-link:hover,
+.travel-guide-link:focus {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     outline: none;
 }
 
-.recommendation-link:focus-visible {
+.travel-guide-link:focus-visible {
     outline: 3px solid #007bff;
     outline-offset: 2px;
 }
 
-.recommendation-image {
+.travel-guide-image {
     width: 100%;
     height: 200px;
     object-fit: cover;
     background-color: #f8f9fa; /* Placeholder color while loading */
 }
 
-.recommendation-content {
+.travel-guide-content {
     padding: 1.5rem;
 }
 
-.recommendation-title {
+.travel-guide-title {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
@@ -95,7 +95,7 @@
     line-height: 1.4;
 }
 
-.recommendation-location {
+.travel-guide-location {
     font-size: 0.9rem;
     color: #666;
     display: flex;
@@ -103,32 +103,32 @@
     gap: 0.5rem;
 }
 
-.recommendation-location i {
+.travel-guide-location i {
     color: #888;
 }
 
 /* Smooth image loading */
-.recommendation-image {
+.travel-guide-image {
     opacity: 0;
     transition: opacity 0.3s ease-in;
 }
 
-.recommendation-image.loaded {
+.travel-guide-image.loaded {
     opacity: 1;
 }
 
 /* Print styles */
 @media print {
-    .recommendation-card {
+    .travel-guide-card {
         break-inside: avoid;
         page-break-inside: avoid;
     }
 
-    .recommendation-link {
+    .travel-guide-link {
         box-shadow: none;
     }
 
-    .recommendation-image {
+    .travel-guide-image {
         max-height: 150px;
     }
 

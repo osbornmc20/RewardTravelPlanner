@@ -8,7 +8,7 @@
 
 {% block head %}
 <!-- Canonical URL -->
-<link rel="canonical" href="https://goaskmarshall.com/recommendations">
+<link rel="canonical" href="https://goaskmarshall.com/travel-guides">
 
 <!-- Structured Data -->
 <script type="application/ld+json">
@@ -33,7 +33,7 @@
             "@type": "ListItem",
             "position": 2,
             "name": "Travel Guides",
-            "item": "https://goaskmarshall.com/recommendations"
+            "item": "https://goaskmarshall.com/travel-guides"
         }]
     }
 }
@@ -41,7 +41,7 @@
 {% endblock %}
 
 {% block content %}
-<main class="container recommendations-container">
+<main class="container travel-guides-container">
     <!-- Breadcrumbs -->
     <nav aria-label="Breadcrumb" class="breadcrumbs">
         <ol>
@@ -51,12 +51,12 @@
     </nav>
 
     <h1 class="section-title">Expert Travel Guides</h1>
-    <section class="recommendations-grid" aria-label="Travel Recommendations">
+    <section class="travel-guides-grid" aria-label="Travel Recommendations">
         <!-- Recommendations will be dynamically populated here -->
     </section>
 </main>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/modules/recommendations.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/modules/travel-guides.js') }}" defer></script>
 {% endblock %}
