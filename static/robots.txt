@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Sitemap: https://goaskmarshall.com/sitemap.xml
+
+# Prevent access to certain directories
+Disallow: /static/js/
+Disallow: /static/css/
+Disallow: /api/

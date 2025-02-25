@@ -1,14 +1,62 @@
 {% extends "base.html" %}
 
+{% block title %}Expert Travel Guides & Recommendations - Go Ask Marshall{% endblock %}
+
+{% block meta_description %}Discover expert travel guides and recommendations for destinations worldwide. Find insider tips for Mexico, Budapest, Amsterdam, and the American Southwest.{% endblock %}
+
+{% block meta_keywords %}travel guides, destination recommendations, travel tips, Mexico beaches, Budapest guide, Amsterdam food, Southwest road trip{% endblock %}
+
+{% block head %}
+<!-- Canonical URL -->
+<link rel="canonical" href="https://goaskmarshall.com/recommendations">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Expert Travel Guides & Recommendations",
+    "description": "Discover expert travel guides and recommendations for destinations worldwide. Find insider tips for Mexico, Budapest, Amsterdam, and the American Southwest.",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Go Ask Marshall",
+        "url": "https://goaskmarshall.com"
+    },
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://goaskmarshall.com"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Travel Guides",
+            "item": "https://goaskmarshall.com/recommendations"
+        }]
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
-<div class="container recommendations-container">
-    <h2 class="section-title">Marshall's Recommendations</h2>
-    <div class="recommendations-grid">
+<main class="container recommendations-container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="Breadcrumb" class="breadcrumbs">
+        <ol>
+            <li><a href="/">Home</a></li>
+            <li aria-current="page">Travel Guides</li>
+        </ol>
+    </nav>
+
+    <h1 class="section-title">Expert Travel Guides</h1>
+    <section class="recommendations-grid" aria-label="Travel Recommendations">
         <!-- Recommendations will be dynamically populated here -->
-    </div>
-</div>
+    </section>
+</main>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/modules/recommendations.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modules/recommendations.js') }}" defer></script>
 {% endblock %}

@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, send_from_directory, make_response
+from utils.sitemap import SitemapGenerator
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, AnonymousUserMixin
 from datetime import datetime
 import os
@@ -387,6 +388,33 @@ def test_static():
 @app.route('/recommendations')
 def recommendations():
     return render_template('recommendations.html')
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('static', 'robots.txt')
+
+@app.route('/sitemap.xml')
+def sitemap():
+    sitemap = SitemapGenerator('https://goaskmarshall.com')
+    
+    # Add main pages
+    sitemap.add_url('/', priority=1.0, changefreq='daily')
+    sitemap.add_url('/recommendations', priority=0.9, changefreq='weekly')
+    
+    # Add guide pages with their slugs
+    guides = [
+        {'slug': 'best-mexican-beach-towns', 'title': 'Best lesser-known Mexican beach towns'},
+        {'slug': 'budapest-food-guide', 'title': 'Budapest Food & Activities Guide'},
+        {'slug': 'amsterdam-food-guide', 'title': 'Where to Eat in Amsterdam'},
+        {'slug': 'southwest-road-trip', 'title': 'Great American Southwest Road Trip'}
+    ]
+    
+    for guide in guides:
+        sitemap.add_url(f'/guides/{guide["slug"]}', priority=0.8, changefreq='monthly')
+    
+    response = make_response(sitemap.generate())
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 @app.route('/api/recommendations')
 def get_recommendations():
