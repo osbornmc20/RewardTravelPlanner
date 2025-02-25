@@ -383,5 +383,48 @@ def test_static():
         'css_path': url_for('static', filename='css/trip_planner.css')
     })
 
+# Recommendations routes
+@app.route('/recommendations')
+def recommendations():
+    return render_template('recommendations.html')
+
+@app.route('/api/recommendations')
+def get_recommendations():
+    recommendations = [
+        {
+            "title": "Best lesser-known Mexican beach towns",
+            "location": "Mexico",
+            "author": "Go Ask Marshall",
+            "image": url_for('static', filename='images/recommendations/mexico-beaches.jpg'),
+            "url": "https://mindtrip.ai/z/AHHZKE",
+            "places": "7 places"
+        },
+        {
+            "title": "Guide to Budapest - Food & Activities",
+            "location": "Budapest, Hungary",
+            "author": "Go Ask Marshall",
+            "image": url_for('static', filename='images/recommendations/budapest-guide.jpg'),
+            "url": "https://mindtrip.ai/z/Scbzkj",
+            "places": "21 places"
+        },
+        {
+            "title": "Where to Eat in Amsterdam if you don't like Dutch food",
+            "location": "Amsterdam, The Netherlands",
+            "author": "Go Ask Marshall",
+            "image": url_for('static', filename='images/recommendations/amsterdam-food.jpg'),
+            "url": "https://mindtrip.ai/z/wGjnrt",
+            "places": "11 places"
+        },
+        {
+            "title": "The Great American Southwest - A Road Trip",
+            "location": "United States",
+            "author": "Go Ask Marshall",
+            "image": url_for('static', filename='images/recommendations/southwest-roadtrip.jpg'),
+            "url": "https://mindtrip.ai/z/BWizlt",
+            "places": "10 days"
+        }
+    ]
+    return jsonify(recommendations)
+
 if __name__ == '__main__':
     app.run(debug=True, port=5037)

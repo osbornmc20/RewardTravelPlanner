@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container recommendations-container">
+    <h2 class="section-title">Marshall's Recommendations</h2>
+    <div class="recommendations-grid">
+        <!-- Recommendations will be dynamically populated here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/recommendations.js') }}"></script>
+{% endblock %}
