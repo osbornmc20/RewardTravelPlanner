@@ -1,4 +1,11 @@
 /* Trip Results Container */
+.trip-results-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 15px;
+}
+
 .trip-results {
     width: 100%;
     max-width: 100%;
@@ -10,6 +17,7 @@
     border: 1px solid #dee2e6;
     margin-bottom: 1rem;
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
 }
 
@@ -17,31 +25,101 @@
     cursor: pointer;
     padding: 15px;
     background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid #007bff;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    position: relative;
 }
 
 .destination-header h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
+    color: #343a40;
+    flex-grow: 1;
 }
 
 .toggle-icon {
     transition: transform 0.3s ease;
+    display: inline-block !important;
+    font-size: 18px;
+    color: #007bff !important;
+    margin-left: 10px;
+    position: relative;
+    z-index: 2;
+    font-weight: bold;
 }
 
 .destination-header.active .toggle-icon {
-    transform: rotate(180deg);
+    transform: rotate(180deg) !important;
 }
 
 .destination-content {
-    display: none;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    display: none !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .destination-content.show {
-    display: block;
+    display: block !important;
+}
+
+.destination-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-section {
+    margin-bottom: 1.5rem;
+}
+
+.summary-title {
+    color: #343a40;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.summary-content {
+    line-height: 1.6;
+}
+
+.recommendations-section {
+    margin-bottom: 1.5rem;
+}
+
+.recommendation-category {
+    color: #0d6efd;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.recommendation-item {
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding-left: 20px;
+}
+
+.recommendation-item:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #28a745;
+}
+
+.recommendations-content {
+    padding-left: 0.5rem;
+}
+
+.destination-section {
+    margin-bottom: 2rem;
 }
 
 @media (max-width: 768px) {
@@ -331,12 +409,14 @@
 }
 
 .destination-content.show {
-    display: block;
+    display: block !important;
 }
 
 .toggle-icon {
     transition: transform 0.3s ease;
-    font-size: 1.2rem;
+    display: inline-block;
+    font-size: 16px;
+    color: #0d6efd;
 }
 
 .destination-header.active .toggle-icon {
@@ -436,11 +516,9 @@
 
 .toggle-icon {
     transition: transform 0.3s ease;
-    color: #666;
-}
-
-.destination-header.active .toggle-icon {
-    transform: rotate(180deg);
+    display: inline-block;
+    font-size: 16px;
+    color: #0d6efd;
 }
 
 .destination-content {
@@ -450,7 +528,7 @@
 }
 
 .destination-content.show {
-    display: block;
+    display: block !important;
 }
 
 /* Center Continue Planning buttons */
@@ -746,4 +824,1085 @@
     .luxury-experience {
         margin-bottom: 1rem;
     }
+}
+
+/* Section titles styling for both Economy and Luxury sections */
+.section-title {
+    color: #007bff;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #007bff;
+    display: inline-block;
+}
+
+/* Ensure consistent spacing in detail sections */
+.detail-section {
+    margin-bottom: 15px !important;
+}
+
+.detail-content {
+    padding: 0 !important;
+}
+
+.detail-content ul {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-left: 20px !important;
+}
+
+.section-title {
+    color: #007bff;
+    font-weight: 600;
+    margin-bottom: 5px !important;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #007bff;
+    display: inline-block;
+}
+
+/* Force the same spacing for both Economy and Luxury sections */
+.option-section {
+    padding: 15px !important;
+}
+
+/* Option header styling */
+.option-header {
+    font-size: 1.75rem !important;
+    color: #007bff !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #007bff !important;
+}
+
+/* Section styling */
+.detail-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    color: #0d6efd;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #0d6efd;
+    padding-bottom: 0.5rem;
+}
+
+/* List styling */
+.detail-section ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 0;
+}
+
+.detail-section li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    font-size: 1rem;
+    color: #212529;
+}
+
+/* Button styling */
+.select-trip-option {
+    background-color: white;
+    color: #0d6efd;
+    border: 1px solid #0d6efd;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.select-trip-option:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Destination content */
+.destination-content {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Override previous styles */
+.detail-content ul li:before {
+    display: none;
+}
+
+.detail-content ul li {
+    display: block;
+    padding-left: 0;
+}
+
+.detail-content ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+}
+
+/* Make economy and luxury containers equal height */
+.destination-content .row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.destination-content .row .col-md-6 {
+    display: flex;
+}
+
+.destination-content .option-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Apply consistent padding */
+.destination-content .option-section {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background-color: white;
+    margin-bottom: 0; /* Remove bottom margin since the parent will handle spacing */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Set a minimum height for option sections */
+.option-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure the buttons align at the bottom */
+.option-content .text-center {
+    margin-top: auto;
+    padding-top: 1.5rem;
+}
+
+/* Section titles with blue underlines */
+.option-section h2 {
+    font-size: 1.5rem;
+    color: #343a40;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #007bff;
+}
+
+/* Flight Details, Hotel Option, Value Analysis headers */
+.detail-section h3 {
+    color: #007bff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* First detail section should have less top margin */
+.detail-section:first-child h3 {
+    margin-top: 0.75rem;
+}
+
+/* Option section styling */
+.option-section {
+    border: 1px solid #007bff;
+    border-radius: 8px;
+    background-color: white;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    height: 100%;
+    position: relative;
+}
+
+/* Selected state styling */
+.option-section.selected {
+    border: 2px solid #007bff;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #007bff;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    border-bottom-left-radius: 4px;
+    display: none;
+}
+
+.option-section.selected .selected-label {
+    display: block;
+}
+
+/* Continue Planning button styling */
+.continue-planning-btn {
+    background-color: white;
+    color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    padding: 8px 15px;
+    font-weight: 500;
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.continue-planning-btn i {
+    font-size: 14px;
+}
+
+/* Override Bootstrap bullet points */
+.detail-section ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 1rem;
+}
+
+.detail-section li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.detail-section li:before {
+    content: "•";
+    position: absolute;
+    left: 0.25rem;
+    color: #212529;
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+/* Indented items in Value Analysis */
+.detail-section li.indented {
+    margin-left: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.detail-section li.indented:before {
+    content: "◦";
+}
+
+/* Make section contents bold where needed */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600;
+}
+
+/* Adjust spacing for the section content */
+.option-content {
+    margin-bottom: 1rem;
+}
+
+/* Special styling for detail sections */
+.detail-section {
+    margin-bottom: 1.5rem;
+}
+
+/* Experience section header */
+.option-section h2 {
+    font-size: 1.75rem;
+    color: #343a40;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #007bff;
+}
+
+/* Flight Details, Hotel Option, Value Analysis headers */
+.detail-section h3 {
+    color: #007bff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #007bff;
+    padding-bottom: 0.25rem;
+    display: inline-block;
+}
+
+/* First detail section should have less top margin */
+.detail-section:first-child h3 {
+    margin-top: 0.75rem;
+}
+
+/* Option section styling */
+.option-section {
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    background-color: white;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    height: 100%;
+    position: relative;
+}
+
+/* Selected state styling */
+.option-section.selected {
+    border: 2px solid #007bff;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #007bff;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    border-bottom-left-radius: 4px;
+    display: none;
+}
+
+.option-section.selected .selected-label {
+    display: block;
+}
+
+/* Continue Planning button styling */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 2px solid #007bff !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    margin-top: 1.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f0f7ff !important;
+    transform: translateY(-1px) !important;
+}
+
+.continue-planning-btn i {
+    font-size: 16px !important;
+    margin-right: 2px !important;
+}
+
+/* Override Bootstrap bullet points */
+.detail-section ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 1rem;
+}
+
+.detail-section li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.detail-section li:before {
+    content: "•";
+    position: absolute;
+    left: 0.25rem;
+    color: #212529;
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+/* Make section contents bold where needed */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600;
+}
+
+/* Adjust spacing for the section content */
+.option-content {
+    margin-bottom: 1rem;
+}
+
+/* Special styling for detail sections */
+.detail-section {
+    margin-bottom: 1.5rem;
+}
+
+/* Section title styling - blue headings with underlines */
+.section-title,
+.detail-section h3 {
+    color: #007bff !important;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* First section title gets less top margin */
+.detail-section:first-child .section-title {
+    margin-top: 0.5rem;
+}
+
+/* Option sections styling */
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+}
+
+/* Selected state */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+}
+
+/* Selected label positioning */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f8f9fa !important;
+}
+
+.continue-planning-btn i {
+    font-size: 14px !important;
+}
+
+/* Override Bootstrap bullet points */
+.detail-section ul {
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+.detail-section li {
+    position: relative !important;
+    padding-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+}
+
+.detail-section li:before {
+    content: "•" !important;
+    position: absolute !important;
+    left: 0.25rem !important;
+    color: #212529 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Make section contents bold where needed */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600 !important;
+}
+
+/* Adjust spacing for the section content */
+.option-content {
+    margin-bottom: 1rem !important;
+}
+
+/* Special styling for detail sections */
+.detail-section {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Experience section header */
+.option-section h2 {
+    font-size: 1.75rem !important;
+    color: #343a40 !important;
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #007bff !important;
+}
+
+/* Flight Details, Hotel Option, Value Analysis headers */
+.detail-section h3 {
+    color: #007bff !important;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    margin-top: 1.25rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* First detail section should have less top margin */
+.detail-section:first-child h3 {
+    margin-top: 0.75rem !important;
+}
+
+/* Option section styling */
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    height: 100% !important;
+    position: relative !important;
+}
+
+/* Selected state styling */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button styling */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f8f9fa !important;
+}
+
+.continue-planning-btn i {
+    font-size: 14px !important;
+}
+
+/* Override Bootstrap bullet points */
+.detail-section ul {
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+.detail-section li {
+    position: relative !important;
+    padding-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+}
+
+.detail-section li:before {
+    content: "•" !important;
+    position: absolute !important;
+    left: 0.25rem !important;
+    color: #212529 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Make section contents bold where needed */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600 !important;
+}
+
+/* Adjust spacing for the section content */
+.option-content {
+    margin-bottom: 1rem !important;
+}
+
+/* Special styling for detail sections */
+.detail-section {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Section title styling - blue headings with underlines */
+.section-title {
+    color: #007bff !important;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* First section title gets less top margin */
+.detail-section:first-child .section-title {
+    margin-top: 0.5rem !important;
+}
+
+/* Option sections styling */
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+}
+
+/* Selected state */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f8f9fa !important;
+}
+
+.continue-planning-btn i {
+    font-size: 14px !important;
+}
+
+/* Override Bootstrap bullet points */
+.detail-section ul {
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+.detail-section li {
+    position: relative !important;
+    padding-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+}
+
+.detail-section li:before {
+    content: "•" !important;
+    position: absolute !important;
+    left: 0.25rem !important;
+    color: #212529 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Make section contents bold where needed */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600 !important;
+}
+
+/* Adjust spacing for the section content */
+.option-content {
+    margin-bottom: 1rem !important;
+}
+
+/* Special styling for detail sections */
+.detail-section {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Experience section header */
+.option-section h2 {
+    font-size: 1.75rem !important;
+    color: #343a40 !important;
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #007bff !important;
+}
+
+/* Flight Details, Hotel Option, Value Analysis headers */
+.detail-section h3 {
+    color: #007bff !important;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+    margin-top: 1.25rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* First detail section should have less top margin */
+.detail-section:first-child h3 {
+    margin-top: 0.75rem !important;
+}
+
+/* Option section styling */
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    height: 100% !important;
+    position: relative !important;
+}
+
+/* Selected state styling */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button styling */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f8f9fa !important;
+}
+
+.continue-planning-btn i {
+    font-size: 14px !important;
+}
+
+/* Override Bootstrap bullet points */
+.detail-section ul {
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+.detail-section li {
+    position: relative !important;
+    padding-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+}
+
+.detail-section li:before {
+    content: "•" !important;
+    position: absolute !important;
+    left: 0.25rem !important;
+    color: #212529 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Make section contents bold where needed */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600 !important;
+}
+
+/* Adjust spacing for the section content */
+.option-content {
+    margin-bottom: 1rem !important;
+}
+
+/* Special styling for detail sections */
+.detail-section {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Section title styling - blue headings with underlines */
+.section-title {
+    color: #007bff !important;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* First section title gets less top margin */
+.detail-section:first-child .section-title {
+    margin-top: 0.5rem !important;
+}
+
+/* Option sections styling */
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+}
+
+/* Selected state */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 1px solid #007bff !important;
+    border-radius: 4px !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f8f9fa !important;
+}
+
+.continue-planning-btn i {
+    font-size: 14px !important;
+}
+
+/* Override Bootstrap bullet points */
+.detail-section ul {
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+.detail-section li {
+    position: relative !important;
+    padding-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+}
+
+.detail-section li:before {
+    content: "•" !important;
+    position: absolute !important;
+    left: 0.25rem !important;
+    color: #212529 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Make section contents bold where needed */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600 !important;
+}
+
+/* Adjust spacing for the section content */
+.option-content {
+    margin-bottom: 1rem !important;
+}
+
+/* Special styling for detail sections */
+.detail-section {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Clear any potential conflicting styles */
+/* FINAL TRIP STYLING - DO NOT MODIFY WITHOUT PRODUCTION COMPARISON */
+
+/* Experience headers - matches production */
+.option-header {
+    color: #007bff !important;
+    font-size: 1.75rem !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #007bff !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+/* Section titles (Flight Details, Hotel Option, Value Analysis) - matches production */
+.section-title, 
+.detail-section h3 {
+    color: #007bff !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* Option section container - matches production */
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 8px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+    transition: all 0.2s ease-in-out !important;
+    background-color: white !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Selected state - matches production */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+    box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Selected label - matches production */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+/* Show selected label when option is selected */
+.option-section.selected .selected-label,
+.option-content.selected .selected-label {
+    display: block !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button - matches production */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 2px solid #007bff !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    margin-top: 1.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f0f7ff !important;
+    transform: translateY(-1px) !important;
+}
+
+.continue-planning-btn i {
+    font-size: 16px !important;
+    margin-right: 2px !important;
 }

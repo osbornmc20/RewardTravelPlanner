@@ -1,0 +1,102 @@
+/* Trip Options Styling - Exact match to production version */
+
+/* Experience headers */
+.option-header {
+    color: #007bff !important;
+    font-size: 1.75rem !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #007bff !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+/* Section titles (Flight Details, Hotel Option, Value Analysis) */
+.section-title, 
+.detail-section h3 {
+    color: #007bff !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* Option section container */
+.option-section {
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+    transition: all 0.2s ease-in-out !important;
+    background-color: white !important;
+}
+
+/* Selected state */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+    box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 2px solid #007bff !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    margin-top: 1.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f0f7ff !important;
+    transform: translateY(-1px) !important;
+}
+
+.continue-planning-btn i {
+    font-size: 16px !important;
+    margin-right: 2px !important;
+}
+
+/* List styling */
+.detail-section ul {
+    padding-left: 1.25rem !important;
+    list-style-type: disc !important;
+    margin-bottom: 1rem !important;
+}
+
+.detail-section li {
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+}
+
+.detail-section li b {
+    font-weight: 600 !important;
+}

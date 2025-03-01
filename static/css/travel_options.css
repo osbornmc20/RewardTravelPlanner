@@ -1,0 +1,128 @@
+/* Custom styles for Economy and Luxury experience sections */
+
+/* Experience header styling */
+.option-header {
+    font-size: 1.75rem !important;
+    color: #007bff !important;
+    margin-bottom: 0.75rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #007bff !important;
+}
+
+/* Section title styling for Flight Details, Hotel Option, etc. */
+.section-title,
+.detail-section h3 {
+    color: #007bff !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+/* Option sections container styling */
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 6px !important;
+    background-color: white !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+    height: 100%;
+    transition: border 0.2s ease-in-out !important;
+}
+
+/* Selected state */
+.option-section.selected {
+    border: 2px solid #007bff !important;
+    box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Selected label */
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 2px solid #007bff !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    margin-top: 1.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f0f7ff !important;
+    transform: translateY(-1px) !important;
+}
+
+.continue-planning-btn i {
+    font-size: 16px !important;
+    margin-right: 2px !important;
+}
+
+/* List styling */
+.detail-section ul {
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-bottom: 1rem !important;
+}
+
+.detail-section li {
+    position: relative !important;
+    padding-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+}
+
+.detail-section li:before {
+    content: "•" !important;
+    position: absolute !important;
+    left: 0.25rem !important;
+    color: #212529 !important;
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Bold text */
+.detail-section b, 
+.detail-section strong {
+    font-weight: 600 !important;
+}
+
+/* Sections spacing */
+.option-content {
+    margin-bottom: 1rem !important;
+}
+
+.detail-section {
+    margin-bottom: 1.5rem !important;
+}
+
+/* Force style refresh */
+.destination-section {
+    margin-bottom: 30px !important;
+}

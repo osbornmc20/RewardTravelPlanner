@@ -166,7 +166,7 @@
     }
 
     .destination-content.show {
-        display: block;
+        display: block !important;
     }
 
     /* Adjust loyalty program cards */
@@ -325,6 +325,17 @@
         max-width: 100%;
         padding-left: 1rem;
         padding-right: 1rem;
+    }
+    
+    /* Make destination sections readable on small screens */
+    .destination-section {
+        width: 100% !important;
+        min-width: 300px !important;
+    }
+    
+    .trip-results-container {
+        padding: 0 10px;
+        max-width: 100%;
     }
     
     /* Adjust card spacing on mobile */

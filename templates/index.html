@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/trip_results.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/trip_results.css?v=20250228_18101') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css?v=20250228_18101') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/travel_options.css?v=20250228_18101') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/trip_styles.css?v=20250228_18101') }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <style>
 .trip-type-box {
@@ -26,6 +28,84 @@
 .trip-type-box.selected {
     background-color: #0d6efd !important;
     color: white !important;
+}
+
+/* Critical Trip Option Styling */
+.option-header {
+    font-size: 1.75rem !important;
+    color: #007bff !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid #007bff !important;
+}
+
+.detail-section h3, .section-title {
+    color: #007bff !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.75rem !important;
+    border-bottom: 1px solid #007bff !important;
+    padding-bottom: 0.25rem !important;
+    display: inline-block !important;
+}
+
+.option-section {
+    border: 1px solid #007bff !important;
+    border-radius: 8px !important;
+    background-color: white !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    position: relative !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.option-section.selected {
+    border: 2px solid #007bff !important;
+    box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25) !important;
+}
+
+.selected-label {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    background-color: #007bff !important;
+    color: white !important;
+    padding: 0.5rem 0.75rem !important;
+    font-weight: 600 !important;
+    border-bottom-left-radius: 4px !important;
+    display: none !important;
+}
+
+.option-section.selected .selected-label {
+    display: block !important;
+}
+
+/* Continue Planning button styling */
+.continue-planning-btn {
+    background-color: white !important;
+    color: #007bff !important;
+    border: 2px solid #007bff !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    margin-top: 1.5rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.continue-planning-btn:hover {
+    background-color: #f0f7ff !important;
+    transform: translateY(-1px) !important;
+}
+
+.continue-planning-btn i {
+    font-size: 16px !important;
+    margin-right: 2px !important;
 }
 
 .trip-type-box.disabled {
@@ -250,7 +330,9 @@
 </div>
 
     <!-- Trip Results Section -->
-    <div id="trip-results" class="mt-4"></div>
+<div class="container mt-4">
+    <div id="trip-results"></div>
+</div>
 
     <!-- MindTrip Integration Section -->
     <div id="mindtrip-integration" class="card mb-4">
@@ -384,16 +466,21 @@ $(document).ready(function() {
             return;
         }
 
-        // Get the trip type from the selected option button
-        const optionType = selectedOption.querySelector('.select-trip-option').dataset.optionType;
+        // Get the trip type from the selected option button (either class might be present)
+        const optionButton = selectedOption.querySelector('.select-trip-option') || selectedOption.querySelector('.continue-planning-btn');
+        const optionType = optionButton ? optionButton.dataset.optionType : (window.selectedOption || 'economy');
         const tripSummary = document.querySelector('.trip-summary').innerHTML;
         
         // Parse destination and hotel from trip summary
-        const lines = tripSummary.split('<br>');
-        const destination = lines[1].split('<strong>Route:</strong>')[1].trim();
-        const hotel = lines[2].split('<strong>Hotel:</strong>')[1].trim();
-        const tripMonth = lines[3].split('<strong>Travel Month:</strong>')[1].trim();
-        const tripLength = lines[4].split('<strong>Duration:</strong>')[1].trim().split(' ')[0];
+        const routeMatch = tripSummary.match(/<strong>Route:<\/strong>\s*([^<]+)/);
+        const hotelMatch = tripSummary.match(/<strong>Hotel:<\/strong>\s*([^<]+)/);
+        const monthMatch = tripSummary.match(/<strong>Travel Month:<\/strong>\s*([^<]+)/);
+        const durationMatch = tripSummary.match(/<strong>Duration:<\/strong>\s*([^<]+)/);
+        
+        const destination = routeMatch ? routeMatch[1].trim() : 'Unknown Destination';
+        const hotel = hotelMatch ? hotelMatch[1].trim() : 'Unknown Hotel';
+        const tripMonth = monthMatch ? monthMatch[1].trim() : 'Unknown Month';
+        const tripLength = durationMatch ? durationMatch[1].trim().split(' ')[0] : '7';
 
         // Extract destination city (remove 'LAX to ' if present)
         const destinationCity = destination.split(' to ')[1] || destination;
@@ -473,4 +560,5 @@ $(document).ready(() => {
     TripGenerator.init();
 });
 </script>
+<script src="{{ url_for('static', filename='js/destination-toggle.js') }}"></script>
 {% endblock %}

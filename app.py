@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, send_from_directory, make_response
 from utils.sitemap import SitemapGenerator
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, AnonymousUserMixin
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 import json
@@ -13,9 +13,17 @@ from services.ai_service import TravelPlanGenerator, TripValidationError
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
+
+# Enhanced security settings
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///travel_planner.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Session security settings
+app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Restrict cross-site requests
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Session expiration
 
 # Initialize extensions
 db.init_app(app)
@@ -24,6 +32,29 @@ db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Session validation middleware
+@app.before_request
+def validate_session():
+    # Skip for static files and authentication routes
+    if request.path.startswith('/static') or request.path in ['/login', '/logout', '/register']:
+        return
+        
+    # Check if user is authenticated but session is missing user_id
+    if current_user.is_authenticated and 'user_id' not in session:
+        print(f"Session integrity issue detected: Missing user_id for {current_user.email if hasattr(current_user, 'email') else 'unknown user'}")
+        logout_user()
+        session.clear()
+        flash('Your session has expired. Please login again.')
+        return redirect(url_for('login'))
+        
+    # Check if session user_id doesn't match current user
+    if current_user.is_authenticated and 'user_id' in session and session['user_id'] != current_user.id:
+        print(f"Session integrity issue detected: User ID mismatch for {current_user.email}")
+        logout_user()
+        session.clear()
+        flash('Your session has expired. Please login again.')
+        return redirect(url_for('login'))
 
 # Create tables
 with app.app_context():
@@ -73,36 +104,178 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # Authentication routes
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Handle forgot password requests"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        if not email:
+            flash('Email is required')
+            return render_template('forgot_password.html')
+            
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Generate reset token
+            token = user.generate_reset_token()
+            db.session.commit()
+            
+            # Create reset link
+            reset_url = url_for('reset_password', token=token, email=email, _external=True)
+            
+            # Display the reset link directly on the page
+            return render_template('reset_link.html', reset_url=reset_url, email=email)
+        else:
+            # For a demo app without sensitive data, we can be more user-friendly
+            flash('No account found with that email address. Please check the email or register a new account.')
+            return render_template('forgot_password.html')
+        
+    return render_template('forgot_password.html')
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Handle password reset with token"""
+    email = request.args.get('email')
+    if not email or not token:
+        return render_template('error.html', 
+                              error_title="Invalid Reset Link",
+                              error_message="The password reset link is missing required information.",
+                              back_link=url_for('forgot_password'),
+                              back_text="Try Again")
+        
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.reset_token:
+        return render_template('error.html', 
+                              error_title="Invalid Reset Link",
+                              error_message="This reset link is invalid or has already been used.",
+                              back_link=url_for('forgot_password'),
+                              back_text="Request a New Link")
+        
+    # For GET requests, verify token and show form
+    if request.method == 'GET':
+        if user.verify_reset_token(token):
+            return render_template('reset_password.html', token=token, email=email)
+        else:
+            return render_template('error.html', 
+                                  error_title="Expired Reset Link",
+                                  error_message="This password reset link has expired. Reset links are valid for 24 hours.",
+                                  back_link=url_for('forgot_password'),
+                                  back_text="Request a New Link")
+    
+    # For POST requests, process the form submission
+    if request.method == 'POST':
+        if not user.verify_reset_token(token):
+            return render_template('error.html', 
+                                  error_title="Expired Reset Link",
+                                  error_message="This password reset link has expired. Reset links are valid for 24 hours.",
+                                  back_link=url_for('forgot_password'),
+                                  back_text="Request a New Link")
+            
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        errors = []
+        if not password:
+            errors.append('New password is required')
+        if not confirm_password:
+            errors.append('Password confirmation is required')
+        if password and confirm_password and password != confirm_password:
+            errors.append('Passwords do not match')
+        if password and len(password) < 8:
+            errors.append('Password must be at least 8 characters long')
+            
+        if errors:
+            for error in errors:
+                flash(error)
+            return render_template('reset_password.html', token=token, email=email)
+        
+        # Update password and clear token
+        user.set_password(password)
+        user.clear_reset_token()
+        db.session.commit()
+        
+        # Return success page instead of redirecting with a flash message
+        return render_template('password_reset_success.html', login_url=url_for('login'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # Clear any existing session
+    session.clear()
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
         
+        # Basic validation
+        if not email or not password:
+            flash('Email and password are required')
+            return render_template('register.html')
+            
+        if password != confirm_password:
+            flash('Passwords do not match')
+            return render_template('register.html')
+            
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long')
+            return render_template('register.html')
+        
+        # Check if user already exists
         if User.query.filter_by(email=email).first():
             flash('Email already registered')
             return redirect(url_for('register'))
         
+        # Create new user
         user = User(email=email)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
         
-        login_user(user)
+        # Set session as permanent and login user
+        session.permanent = True
+        login_user(user, remember=True)
+        
+        # Add session identifier
+        session['user_id'] = user.id
+        session['login_time'] = datetime.now().isoformat()
+        
+        # Log the registration
+        print(f"New user registered: {user.email} at {session['login_time']}")
+        
+        flash('Registration successful! Welcome to Reward Travel Planner.')
         return redirect(url_for('index'))
     
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Clear any existing session
+    session.clear()
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        
+        # Validate input
+        if not email or not password:
+            flash('Email and password are required')
+            return render_template('login.html')
+            
         user = User.query.filter_by(email=email).first()
         
         if user and user.check_password(password):
-            login_user(user)
-            return redirect(url_for('index'))
+            # Set session as permanent and login user
+            session.permanent = True
+            login_user(user, remember=True)
+            
+            # Add a session identifier
+            session['user_id'] = user.id
+            session['login_time'] = datetime.now().isoformat()
+            
+            # Log the login
+            print(f"User logged in: {user.email} at {session['login_time']}")
+            
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('index'))
         
         flash('Invalid email or password')
     
@@ -111,8 +284,18 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    # Log the logout
+    if current_user.is_authenticated:
+        print(f"User logged out: {current_user.email}")
+    
+    # Clear the session
+    session.clear()
+    
+    # Logout the user
     logout_user()
-    return redirect(url_for('index'))
+    
+    flash('You have been logged out successfully')
+    return redirect(url_for('login'))
 
 # Routes for points programs
 @app.route('/points/add', methods=['POST'])
@@ -362,7 +545,7 @@ def test_openai():
         
         # Try a simple chat completion as a test
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": "Say hello!"}]
         )
         return jsonify({
@@ -486,4 +669,4 @@ def get_hotel_rankings():
     return jsonify(hotels)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5037)
+    app.run(debug=True, port=5039)

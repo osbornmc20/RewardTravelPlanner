@@ -161,17 +161,16 @@ Why We Recommend This Destination:
 
 OPTION A - ECONOMY EXPERIENCE
 Flight Details:
-- <b>Route</b>: [Airport to destination]
-- <b>Airline</b>: [Airline name]
-- <b>Points Program</b>: [Program name]
-- <b>Points Used</b>: [X points RT per person]
+- Route: [Airport to destination]
+- Airline: [Airline name]
+- Points Program: [Program name]
+- <b>Points Used</b>: [X points RT]
 - <b>Fare Class</b>: Economy (Main Cabin)
-
 Hotel Option:
-- <b>Property</b>: [Hotel name]
-- <b>Points Program</b>: [Program name]
-- <b>Total Points Needed</b>: [X points (X points per night)]
-- <b>Property Details</b>: [Brief description]
+- Property: [Hotel name]
+- Points Program: [Program name]
+- Total Points Needed: [X points (X points per night)]
+- Property Details: [Brief description]
 
 Value Analysis:
 - <b>Total Points Used</b>: [Total points used]
@@ -184,10 +183,8 @@ Flight Details:
 - Route: [Airport to destination]
 - Airline: [Airline name]
 - Points Program: [Program name]
-- <b>Points Used</b>: [X points round trip per person]
+- <b>Points Used</b>: [X points RT]
 - <b>Fare Class</b>: [Premium Economy/Business/First] (specify exact cabin)
-- Award Availability: [Typical availability for these months]
-
 Hotel Option:
 - Property: [Luxury hotel name]
 - Points Program: [Program name]
@@ -246,7 +243,7 @@ IMPORTANT FORMATTING NOTES:
             try:
                 # Set a timeout for the API call
                 response = self.client.chat.completions.create(
-                    model="chatgpt-4o-latest",  # Use latest O4 model for more reliable responses
+                    model="gpt-4o-mini",  # Use the mini model for faster responses while maintaining quality
                     messages=[
                         {"role": "system", "content": self._get_system_prompt(trip_data)},
                         {"role": "user", "content": "Generate travel recommendations based on the provided parameters."}

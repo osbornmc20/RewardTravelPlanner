@@ -208,6 +208,9 @@ const TripGenerator = {
                 border-bottom: 2px solid #3498db;
                 padding-bottom: 10px;
                 margin-bottom: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
             }
             .destination-summary {
                 background-color: #f8f9fa;
@@ -289,7 +292,7 @@ const TripGenerator = {
             .map(d => d.trim());
         
         // Create the HTML for each destination
-        let resultsHtml = '<div class="trip-results-container">';
+        let resultsHtml = '<div class="trip-results-container" style="width:100%; max-width:100%;">';
         
         destinations.forEach((destination, index) => {
             // Extract destination header and summary sections
@@ -328,21 +331,16 @@ const TripGenerator = {
                 content = lines.slice(optionsStartIndex).join('\n');
             }
             
-            // Split into economy and luxury options
-            const luxuryStart = content.includes('OPTION B - LUXURY EXPERIENCE') ? 
-                content.indexOf('OPTION B - LUXURY EXPERIENCE') : 
-                content.indexOf('Luxury Experience:');
-            
-            const economySection = content.substring(0, luxuryStart).trim();
-            const luxurySection = content.substring(luxuryStart).trim();
+            // Process economy and luxury sections
+            const sections = this.processSectionContent(content, index + 1);
             
             // Only create the destination section if we have valid data
-            if (economySection && luxurySection && destName !== 'Unknown Destination') {
+            if (sections.economyContent && sections.luxuryContent && destName !== 'Unknown Destination') {
                 resultsHtml += `
                     <section class="destination-section">
-                        <div class="destination-header" onclick="this.classList.toggle('active'); this.nextElementSibling.classList.toggle('show');">
+                        <div class="destination-header${window.innerWidth <= 768 ? '' : ' active'}">
                             <h3>Destination ${index + 1} - ${destName}</h3>
-                            <span class="toggle-icon">▼</span>
+                            <span class="toggle-icon" style="${window.innerWidth <= 768 ? '' : 'transform: rotate(180deg)'}">▼</span>
                         </div>
                         <div class="destination-content${window.innerWidth <= 768 ? '' : ' show'} mobile-full-width">
                             <div class="destination-summary mb-4">
@@ -352,39 +350,21 @@ const TripGenerator = {
                                         ${destinationSummary}
                                     </div>
                                 </div>
-                                
                                 <div class="recommendations-section">
                                     <h4 class="summary-title">Why We Recommend This Destination</h4>
-                                <div class="recommendations-content">
-                                    ${recommendations.split('<br>').map(rec => {
-                                        // Check if it's a main section header (ends with ':')
-                                        if (rec.endsWith(':')) {
-                                            return `<h5 class="recommendation-category">${rec}</h5>`;
-                                        }
-                                        // Check if it's a bullet point
-                                        else if (rec.startsWith('-')) {
-                                            return `<div class="recommendation-item">${rec.substring(1)}</div>`;
-                                        }
-                                        return rec;
-                                    }).join('')}
+                                    <div class="recommendations-content">
+                                        ${this.formatRecommendations(recommendations)}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="row">
-                            <!-- Economy Column -->
-                            <div class="col-md-6">
-                                <div class="option-section">
-                                    <h3 class="option-header">Economy Experience</h3>
-                                    ${this.formatOptionSection(economySection)}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h2 class="option-header">Economy Experience</h2>
+                                    ${this.formatOptionSection(sections.economyContent)}
                                 </div>
-                            </div>
-                            
-                            <!-- Luxury Column -->
-                            <div class="col-md-6">
-                                <div class="option-section">
-                                    <h3 class="option-header">Luxury Experience</h3>
-                                    ${this.formatOptionSection(luxurySection)}
+                                <div class="col-md-6">
+                                    <h2 class="option-header">Luxury Experience</h2>
+                                    ${this.formatOptionSection(sections.luxuryContent)}
                                 </div>
                             </div>
                         </div>
@@ -404,61 +384,108 @@ const TripGenerator = {
         resultsHtml += '</div>';
         this.resultsContainer.innerHTML = resultsHtml;
         
+        // Attach toggle listeners for destination headers
+        this.attachToggleListeners();
+        console.log('Toggle listeners attached after results HTML loaded');
+        
+        // Set initial state for destination headers (expanded by default on desktop)
+        if (window.innerWidth > 768) {
+            document.querySelectorAll('.destination-header').forEach(header => {
+                header.classList.add('active');
+                
+                // Make sure content is visible
+                const content = header.nextElementSibling;
+                if (content) {
+                    content.classList.add('show');
+                }
+                
+                // Rotate toggle icon
+                const toggleIcon = header.querySelector('.toggle-icon');
+                if (toggleIcon) {
+                    toggleIcon.style.transform = 'rotate(180deg)';
+                }
+            });
+        }
+        
+        // Attach toggle listeners for destination headers
+        this.attachToggleListeners();
+        
         // Dispatch event when results are loaded
         document.dispatchEvent(new Event('tripResultsLoaded'));
 
+        // Update the Select buttons
+        document.querySelectorAll('.select-trip-option').forEach(btn => {
+            btn.classList.add('continue-planning-btn');
+            // Only remove styling classes, keep the select-trip-option class for reference
+            btn.classList.remove('btn', 'btn-outline-primary');
+        });
+
         // Add click handlers for Continue Planning buttons
-        document.querySelectorAll('.select-trip-option').forEach(button => {
+        document.querySelectorAll('.continue-planning-btn').forEach(button => {
             button.addEventListener('click', (e) => {
-                // Remove selection from other options
-                document.querySelectorAll('.option-content').forEach(content => {
-                    content.classList.remove('selected');
+                e.preventDefault();
+                console.log('Continue Planning clicked');
+                
+                // Clear any existing selections
+                document.querySelectorAll('.option-content, .option-section').forEach(element => {
+                    element.classList.remove('selected');
                 });
                 
-                // Add selection to clicked option
+                // Find the parent option content and section and add the selected class to both
                 const optionContent = e.target.closest('.option-content');
-                optionContent.classList.add('selected');
+                const optionSection = e.target.closest('.option-section');
                 
-                // Hide default state and show selected state
-                document.querySelector('.default-state').style.display = 'none';
-                document.querySelector('.selected-trip-summary').style.display = 'block';
+                if (optionContent) {
+                    optionContent.classList.add('selected');
+                    console.log('Added selected class to content:', optionContent);
+                }
+                
+                if (optionSection) {
+                    optionSection.classList.add('selected');
+                    console.log('Added selected class to section:', optionSection);
+                }
+                
+                // Get the option type from the button's data attribute
+                const button = e.target.closest('.continue-planning-btn');
+                if (button) {
+                    window.selectedOption = button.dataset.optionType;
+                    console.log('Selected option type:', window.selectedOption);
+                }
+                
+                const defaultState = document.querySelector('.default-state');
+                const selectedTripSummary = document.querySelector('.selected-trip-summary');
+                
+                if (defaultState) defaultState.style.display = 'none';
+                if (selectedTripSummary) selectedTripSummary.style.display = 'block';
                 
                 console.log('Continue Planning button clicked');
                 
-                // Get trip details from the selected option
                 const optionType = button.dataset.optionType;
-                const destinationSection = optionContent.closest('.destination-section');
+                const destinationSection = button.closest('.destination-section');
                 
-                // Extract destination from the destination header
                 const destinationHeader = destinationSection.querySelector('.destination-header h3');
                 let destination = destinationHeader.textContent.replace(/Destination \d+ - /, '').trim();
                 
-                // Extract hotel and route from the content
                 let hotel = 'Selected Hotel';
                 let route = null;
                 
-                // Look for hotel info and route in all list items
                 const allListItems = optionContent.querySelectorAll('li');
                 allListItems.forEach(item => {
                     const text = item.textContent.trim();
                     
-                    // Extract hotel name from Property field
                     if (text.startsWith('Property:')) {
                         hotel = text.split('Property:')[1].trim();
                     }
                     
-                    // Extract route
                     if (text.startsWith('Route:')) {
                         route = text.split('Route:')[1].split('(')[0].trim();
                     }
                 });
                 
-                // If we found a route, use it as the destination
                 if (route) {
                     destination = route;
                 }
                 
-                // Log what we found for debugging
                 console.log('Found trip details:', {
                     destinationHeader: destinationHeader?.textContent,
                     destination,
@@ -468,11 +495,9 @@ const TripGenerator = {
                     allListItems: Array.from(allListItems).map(li => li.textContent)
                 });
 
-                // Get trip month and length
                 const tripMonth = document.querySelector('#travelMonths')?.value;
                 const tripLength = document.querySelector('#tripLength')?.value;
                 
-                // Log the extracted details for debugging
                 console.log('Extracted trip details:', {
                     destination,
                     hotel,
@@ -481,12 +506,9 @@ const TripGenerator = {
                     optionType
                 });
 
-                // Update trip summary
                 const tripSummary = document.querySelector('.selected-trip-summary');
                 if (tripSummary) {
-                    // Get the correct option type from the section header
-                    const optionSection = optionContent.closest('.option-section');
-                    const optionHeader = optionSection?.querySelector('.option-header');
+                    const optionHeader = optionSection?.querySelector('h2');
                     const isLuxury = optionHeader?.textContent.includes('Luxury');
                     
                     tripSummary.innerHTML = `
@@ -496,7 +518,6 @@ const TripGenerator = {
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <!-- Trip Details Column -->
                                     <div class="col-md-6">
                                         <div class="mindtrip-guide p-3">
                                             <h5 class="text-primary mb-3"><i class="fas fa-suitcase"></i> Selected Option</h5>
@@ -515,8 +536,6 @@ const TripGenerator = {
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Instructions Column -->
                                     <div class="col-md-6">
                                         <div class="mindtrip-guide p-3">
                                             <h5 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Quick Guide</h5>
@@ -546,8 +565,6 @@ const TripGenerator = {
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Button centered at bottom -->
                                 <div class="text-center mt-4">
                                     <button id="mindtrip-btn" class="btn btn-primary btn-lg mindtrip-btn">
                                         <i class="fas fa-plane-departure me-2"></i> Continue Planning on MindTrip.ai
@@ -557,11 +574,9 @@ const TripGenerator = {
                         </div>
                     `;
                     
-                    // Re-attach click handler for MindTrip button
                     const mindTripBtn = document.getElementById('mindtrip-btn');
                     if (mindTripBtn) {
                         mindTripBtn.addEventListener('click', async () => {
-                            // Create the prompt
                             const prompt = `I'm planning a ${tripLength}-day ${isLuxury ? 'luxury' : 'budget-friendly'} trip to ${destination} in ${tripMonth}, staying at ${hotel}. Please help me create a detailed day-by-day itinerary that includes:
 
 1. Activities and attractions that match the ${isLuxury ? 'luxury' : 'budget-conscious'} nature of my trip
@@ -573,10 +588,8 @@ const TripGenerator = {
 Please organize this by day (Day 1, Day 2, etc) and consider the local weather and best times for each activity.`;
                             
                             try {
-                                // Copy to clipboard
                                 await navigator.clipboard.writeText(prompt);
                                 
-                                // Create and show notification
                                 const notification = document.createElement('div');
                                 notification.className = 'alert alert-success position-fixed';
                                 notification.style.cssText = `
@@ -601,16 +614,13 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
                                 
                                 document.body.appendChild(notification);
                                 
-                                // Remove notification after 3 seconds
                                 setTimeout(() => {
                                     notification.remove();
-                                    // Open MindTrip in a new tab
                                     window.open('https://mindtrip.ai/chat', '_blank');
                                 }, 3000);
                                 
                             } catch (error) {
                                 console.error('Error handling MindTrip integration:', error);
-                                // Show error notification
                                 const errorNotification = document.createElement('div');
                                 errorNotification.className = 'alert alert-danger position-fixed';
                                 errorNotification.style.bottom = '20px';
@@ -624,175 +634,334 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
                     }
                 }
                 
-                // Scroll to trip summary
                 tripSummary?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
         });
+        
+        // Fix for destination toggles
+        this.attachToggleListeners();
+    },
+
+    processSectionContent(destination, sectionNumber) {
+        const economyExperienceRegex = /OPTION A - ECONOMY EXPERIENCE([\s\S]*?)(?=OPTION B - LUXURY EXPERIENCE|$)/;
+        const luxuryExperienceRegex = /OPTION B - LUXURY EXPERIENCE([\s\S]*)/;
+        
+        const economyMatch = destination.match(economyExperienceRegex);
+        const luxuryMatch = destination.match(luxuryExperienceRegex);
+        
+        let economyContent = null;
+        let luxuryContent = null;
+        
+        if (economyMatch && economyMatch[1]) {
+            economyContent = this.parseExperienceSection(economyMatch[1].trim(), 'economy');
+        }
+        
+        if (luxuryMatch && luxuryMatch[1]) {
+            luxuryContent = this.parseExperienceSection(luxuryMatch[1].trim(), 'luxury');
+        }
+        
+        return {
+            economyContent,
+            luxuryContent
+        };
+    },
+    
+    parseExperienceSection(sectionText, type) {
+        // Parse all the details from the text
+        const result = {
+            type: type
+        };
+        
+        // Extract flight details
+        const routeMatch = sectionText.match(/Route:([^\n]+)/);
+        if (routeMatch) result.route = routeMatch[1].trim();
+        
+        const airlineMatch = sectionText.match(/Airline:([^\n]+)/);
+        if (airlineMatch) result.airline = airlineMatch[1].trim();
+        
+        const pointsProgramMatch = sectionText.match(/Points Program:([^\n]+)(?=\n|$)/);
+        if (pointsProgramMatch) result.points_program = pointsProgramMatch[1].trim();
+        
+        const pointsUsedMatch = sectionText.match(/Points Used:([^\n]+)/);
+        if (pointsUsedMatch) result.points_used = pointsUsedMatch[1].trim();
+        
+        const fareClassMatch = sectionText.match(/Fare Class:([^\n]+)/);
+        if (fareClassMatch) result.fare_class = fareClassMatch[1].trim();
+        
+        // Extract hotel details
+        const propertyMatch = sectionText.match(/Property:([^\n]+)/);
+        if (propertyMatch) result.property = propertyMatch[1].trim();
+        
+        const hotelPointsProgramMatch = sectionText.match(/Points Program:.*?(\n.*?Points Program:([^\n]+)|$)/);
+        if (hotelPointsProgramMatch && hotelPointsProgramMatch[2]) result.hotel_points_program = hotelPointsProgramMatch[2].trim();
+        
+        const totalPointsNeededMatch = sectionText.match(/Total Points Needed:([^\n]+)/);
+        if (totalPointsNeededMatch) result.total_points_needed = totalPointsNeededMatch[1].trim();
+        
+        const propertyDetailsMatch = sectionText.match(/Property Details:([^\n]+)/);
+        if (propertyDetailsMatch) result.property_details = propertyDetailsMatch[1].trim();
+        
+        // Extract value analysis
+        const totalPointsUsedMatch = sectionText.match(/Total Points Used:([^\n]+)/);
+        if (totalPointsUsedMatch) result.total_points_used = totalPointsUsedMatch[1].trim();
+        
+        const airlinePointsMatch = sectionText.match(/Airline:([^\n]+)/);
+        if (airlinePointsMatch) result.airline_points = airlinePointsMatch[1].trim();
+        
+        const hotelPointsMatch = sectionText.match(/Hotel:([^\n]+)/);
+        if (hotelPointsMatch) result.hotel_points = hotelPointsMatch[1].trim();
+        
+        const dollarValueSavedMatch = sectionText.match(/Dollar Value Saved:([^\n]+)/);
+        if (dollarValueSavedMatch) result.dollar_value_saved = dollarValueSavedMatch[1].trim();
+        
+        return result;
+    },
+
+    attachToggleListeners() {
+        // Fix for destination toggles
+        document.querySelectorAll('.destination-header').forEach(header => {
+            // Remove any existing listeners to prevent duplicates
+            const newHeader = header.cloneNode(true);
+            if (header.parentNode) {
+                header.parentNode.replaceChild(newHeader, header);
+            }
+            
+            // Add the event listener with correct context
+            newHeader.addEventListener('click', function(event) {
+                // Prevent default and stop propagation
+                event.preventDefault();
+                event.stopPropagation();
+                
+                console.log('Destination header clicked directly');
+                
+                // Toggle active class
+                this.classList.toggle('active');
+                
+                // Find and toggle the content
+                const content = this.nextElementSibling;
+                if (content && content.classList.contains('destination-content')) {
+                    // Force toggle the show class
+                    if (content.classList.contains('show')) {
+                        content.classList.remove('show');
+                        content.style.display = 'none';
+                    } else {
+                        content.classList.add('show');
+                        content.style.display = 'block';
+                    }
+                    console.log('Content visibility toggled:', content.classList.contains('show'));
+                } else {
+                    console.warn('Could not find destination content element');
+                }
+                
+                // Toggle the rotation of the arrow
+                const toggleIcon = this.querySelector('.toggle-icon');
+                if (toggleIcon) {
+                    toggleIcon.style.transform = this.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
+                    console.log('Arrow rotation updated:', toggleIcon.style.transform);
+                }
+            });
+        });
+        
+        console.log('Toggle listeners attached to', document.querySelectorAll('.destination-header').length, 'destination headers');
+    },
+    
+    toggleDestination(event) {
+        // This method is now only used as a fallback
+        // The inline function in attachToggleListeners is the primary handler
+        const header = event.currentTarget || this;
+        header.classList.toggle('active');
+        const content = header.nextElementSibling;
+        if (content) {
+            content.classList.toggle('show');
+        }
+        
+        // Toggle the rotation of the arrow
+        const toggleIcon = header.querySelector('.toggle-icon');
+        if (toggleIcon) {
+            toggleIcon.style.transform = header.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+    },
+
+    formatRecommendations(recommendations) {
+        if (!recommendations) return '';
+        
+        // Skip the "Requirements Match" section completely
+        let lines = recommendations.split('<br>');
+        let formattedContent = '';
+        let skipSection = false;
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            // Skip the "Requirements Match" section and its content
+            if (line.includes('Requirements Match:')) {
+                skipSection = true;
+                continue;
+            }
+            
+            // When we reach a new section, stop skipping
+            if (skipSection && (line.includes('Seasonal Analysis:') || 
+                               line.includes('Weather Conditions:') || 
+                               line.includes('Local Highlights:') || 
+                               line.includes('Points Optimization:') ||
+                               line.includes('Award Availability:') ||
+                               line.includes('Value Opportunities:'))) {
+                skipSection = false;
+            }
+            
+            // If we're in skip mode, continue to next line
+            if (skipSection) continue;
+            
+            // Remove the section numbers (e.g., "2. Seasonal Analysis:", "3. Points Optimization:")
+            const cleanedLine = line.replace(/^\d+\.\s+/, '');
+            
+            if (cleanedLine.endsWith(':')) {
+                if (cleanedLine === 'Seasonal Analysis:' || cleanedLine === 'Points Optimization:') {
+                    // Skip these section headers completely
+                    continue;
+                }
+                formattedContent += `<h5 class="recommendation-category">${cleanedLine}</h5>`;
+            } else if (cleanedLine.startsWith('- ') || cleanedLine.startsWith('• ') || cleanedLine.startsWith('✓ ')) {
+                formattedContent += `<div class="recommendation-item">${cleanedLine.substring(2)}</div>`;
+            } else if (cleanedLine) {
+                formattedContent += `<div>${cleanedLine}</div>`;
+            }
+        }
+        
+        return formattedContent;
     },
 
     formatOptionSection(section) {
         if (!section) return '';
         
-        const lines = section.trim().split('\n');
-        let html = '<div class="option-content" data-trip-details="">';
-        
-        // Flight Details Box
-        let flightDetails = '';
-        let hotelOption = '';
-        let valueAnalysis = '';
-        let currentSection = '';
-        
-        // Helper function to clean and validate content
-        const isValidContent = (content) => {
-            if (!content) return false;
-            const cleaned = content.trim();
-            return cleaned && cleaned !== '-' && cleaned !== '--' && cleaned !== '•';
-        };
+        // Get section type (Economy or Luxury) - moved up for use in data-option-type
+        const isLuxury = section.fare_class && (
+            section.fare_class.includes('Business') || 
+            section.fare_class.includes('First') || 
+            section.fare_class.includes('Premium')
+        );
 
-        // Helper function to format content with bold keywords
-        const formatContent = (content) => {
-            // Format requirements with proper spacing
-            if (content.includes('✓')) {
-                return `<div class="requirement-item">${content}</div>`;
-            }
-
-            // Add extra spacing before numbered sections
-            if (content.match(/^\d+\./)) {
-                return `<div class="numbered-section">${content}</div>`;
-            }
-
-            // Replace 'round trip' with 'RT'
-            content = content.replace(/round trip/gi, 'RT');
-            
-            // Format fare type to be in parentheses at the end of points used
-            if (content.includes('Fare Type:')) {
-                return '';
-            }
-            if (content.includes('Points used:')) {
-                const fareType = lines.find(l => l.includes('Fare Type:'));
-                if (fareType) {
-                    const type = fareType.split(':')[1].trim();
-                    content = content.replace('Points used:', 'Points used') + ` (${type})`;
-                }
-            }
-
-            // Skip Award Availability lines
-            if (content.includes('Award Availability:')) {
-                return '';
-            }
-
-            // Convert any <strong> tags to <b> for consistency
-            content = content.replace(/<strong>/g, '<b>').replace(/<\/strong>/g, '</b>');
-            
-            // If content already has bold tags, return it
-            if (content.includes('<b>')) {
-                return content;
-            }
-            
-            // Add bold tags to any remaining unbold headers
-            if (content.includes(':')) {
-                const parts = content.split(':');
-                if (parts.length === 2) {
-                    return `<b>${parts[0]}</b>:${parts[1]}`;
-                }
-            }
-            
-            return content;
-        };
-        
-        lines.forEach(line => {
-            line = line.trim();
-            if (!line || line === '-' || line === '--' || line === '•') return;
-            
-            if (line.includes('Flight Details:')) {
-                currentSection = 'flight';
-            } else if (line.includes('Hotel Option:')) {
-                currentSection = 'hotel';
-            } else if (line.includes('Value Analysis:')) {
-                currentSection = 'value';
-            } else if (line.startsWith('-') || line.startsWith('*')) {
-                const content = line.substring(1).trim();
-                if (!isValidContent(content)) return;
-                
-                const isIndented = line.startsWith('*') || 
-                                  (currentSection === 'value' && 
-                                   (content.includes('Airline:') || content.includes('Hotel:')));
-                const className = isIndented ? 'indented' : '';
-                
-                const formattedContent = formatContent(content);
-                if (!formattedContent) return;
-
-                switch (currentSection) {
-                    case 'flight':
-                        flightDetails += `<li class="${className}">${formattedContent}</li>`;
-                        break;
-                    case 'hotel':
-                        hotelOption += `<li class="${className}">${formattedContent}</li>`;
-                        break;
-                    case 'value':
-                        valueAnalysis += `<li class="${className}">${formattedContent}</li>`;
-                        break;
-                }
-            }
-        });
-        
-        // Only add sections that have content
-        let sectionsHtml = '';
-        
-        if (flightDetails) {
-            sectionsHtml += `
-                <div class="detail-section mobile-full-width">
-                    <h4 class="section-title">Flight Details</h4>
-                    <div class="detail-content">
-                        <ul>${flightDetails}</ul>
-                    </div>
-                </div>
-            `;
-        }
-        
-        if (hotelOption) {
-            sectionsHtml += `
-                <div class="detail-section mobile-full-width">
-                    <h4 class="section-title">Hotel Option</h4>
-                    <div class="detail-content">
-                        <ul>${hotelOption}</ul>
-                    </div>
-                </div>
-            `;
-        }
-        
-        if (valueAnalysis) {
-            sectionsHtml += `
-                <div class="detail-section mobile-full-width">
-                    <h4 class="section-title">Value Analysis</h4>
-                    <div class="detail-content">
-                        <ul>${valueAnalysis}</ul>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Add selection button
-        sectionsHtml += `
-            <div class="text-center mt-4">
-                <button class="btn btn-outline-primary select-trip-option" data-option-type="${section.includes('Luxury') ? 'luxury' : 'economy'}">
-                    <i class="fas fa-plane-departure me-2"></i>Continue Planning
-                </button>
-            </div>
+        let html = `
+            <div class="option-section">
+                <div class="selected-label">Selected</div>
+                <div class="option-content">
         `;
         
-        return html + sectionsHtml + '</div>';
+        // Flight Details
+        html += `<div class="detail-section">`;
+        html += `<h3 class="section-title">Flight Details</h3>`;
+        html += `<ul>`;
+        
+        if (section.route) {
+            html += `<li><b>Route:</b> ${section.route}</li>`;
+        }
+        
+        if (section.airline) {
+            html += `<li><b>Airline:</b> ${section.airline}</li>`;
+        }
+        
+        if (section.points_program) {
+            html += `<li><b>Points Program:</b> ${section.points_program}</li>`;
+        }
+        
+        if (section.points_used) {
+            html += `<li><b>Points Used:</b> ${section.points_used}</li>`;
+        }
+        
+        if (section.fare_class) {
+            html += `<li><b>Fare Class:</b> ${section.fare_class}</li>`;
+        }
+        
+        html += `</ul>`;
+        html += `</div>`;
+        
+        // Hotel Option
+        html += `<div class="detail-section">`;
+        html += `<h3 class="section-title">Hotel Option</h3>`;
+        html += `<ul>`;
+        
+        if (section.property) {
+            html += `<li><b>Property:</b> ${section.property}</li>`;
+        }
+        
+        if (section.hotel_points_program) {
+            html += `<li><b>Points Program:</b> ${section.hotel_points_program}</li>`;
+        }
+        
+        if (section.total_points_needed) {
+            html += `<li><b>Total Points Needed:</b> ${section.total_points_needed}</li>`;
+        }
+        
+        if (section.property_details) {
+            html += `<li><b>Property Details:</b> ${section.property_details}</li>`;
+        }
+        
+        html += `</ul>`;
+        html += `</div>`;
+        
+        // Value Analysis
+        html += `<div class="detail-section">`;
+        html += `<h3 class="section-title">Value Analysis</h3>`;
+        html += `<ul>`;
+        
+        if (section.total_points_used) {
+            html += `<li><b>Total Points Used:</b> ${section.total_points_used}</li>`;
+        }
+        
+        if (section.airline_points) {
+            html += `<li><b>Airline:</b> ${section.airline_points}</li>`;
+        }
+        
+        if (section.hotel_points) {
+            html += `<li><b>Hotel:</b> ${section.hotel_points}</li>`;
+        }
+        
+        if (section.dollar_value_saved) {
+            html += `<li><b>Dollar Value Saved:</b> ${section.dollar_value_saved}</li>`;
+        }
+        
+        html += `</ul>`;
+        html += `</div>`;
+        
+        // Continue Planning button
+        html += `<div class="text-center">
+            <button class="continue-planning-btn" data-option-type="${isLuxury ? 'luxury' : 'economy'}"><i class="fas fa-plane"></i> Continue Planning</button>
+        </div>`;
+        
+        html += `</div></div>`;
+        
+        return html;
+    },
+
+    handleOptionSelection(button) {
+        const optionType = button.dataset.optionType;
+        console.log(`Selected ${optionType} option`);
+        
+        // Remove selection from all options
+        document.querySelectorAll('.option-section').forEach(section => {
+            section.classList.remove('selected');
+        });
+        
+        // Add selection to parent option section
+        const optionSection = button.closest('.option-section');
+        if (optionSection) {
+            optionSection.classList.add('selected');
+        }
+        
+        // Store selected option type for MindTrip
+        window.selectedOption = optionType;
+        
+        // Call any additional functionality needed when an option is selected
+        const tripSummary = document.getElementById('tripSummarySection');
+        tripSummary?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
 
     formatExperience(text) {
         if (!text) return '';
         
-        // Split into sentences
         const sentences = text.split(/(?<=[.!?])\s+/);
         
-        // Format each sentence
         return sentences.map(sentence => {
-            // Highlight key phrases
             sentence = sentence
                 .replace(/(\d+(?:\.\d+)?%)/g, '<span class="highlight-stat">$1</span>')
                 .replace(/(\$\d+(?:,\d{3})*(?:\.\d{2})?)/g, '<span class="highlight-price">$1</span>')

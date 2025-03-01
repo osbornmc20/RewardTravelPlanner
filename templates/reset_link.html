@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-center">Password Reset Link</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">Reset link generated!</h4>
+                        <p>A password reset link has been generated for <strong>{{ email }}</strong>.</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p>Click the button below to reset your password:</p>
+                        <div class="d-grid">
+                            <a href="{{ reset_url }}" class="btn btn-primary btn-lg">Reset My Password</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Or copy this link:</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group">
+                                <input type="text" class="form-control" value="{{ reset_url }}" id="reset-url" readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="copyResetLink()">Copy</button>
+                            </div>
+                            <small class="text-muted mt-2 d-block">This link will expire in 24 hours.</small>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p><a href="{{ url_for('login') }}">Return to login page</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyResetLink() {
+    var copyText = document.getElementById("reset-url");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    document.execCommand("copy");
+    alert("Reset link copied to clipboard!");
+}
+</script>
+{% endblock %}
