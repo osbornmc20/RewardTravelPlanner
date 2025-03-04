@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - Go Ask Marshall{% endblock %}
+
+{% block meta_description %}We're experiencing some technical difficulties. Please try again later.{% endblock %}
+
+{% block head %}
+<!-- Canonical URL -->
+<link rel="canonical" href="https://goaskmarshall.com/500">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="text-center">Server Error</h1>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                        <p class="mt-3 lead">We're experiencing some technical difficulties. Please try again later.</p>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="/" class="btn btn-primary">Go to Homepage</a>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary">Go Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

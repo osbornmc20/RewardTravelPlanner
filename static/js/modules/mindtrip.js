@@ -34,7 +34,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!button) return;
 
         const optionType = button.dataset.optionType;
-        const optionContent = button.closest('.option-content');
+        console.log('MindTrip: Selected option type:', optionType);
+        
+        // Find the closest option content or section
+        const optionContent = button.closest('.option-content') || button.closest('.option-section');
         if (!optionContent) return;
         
         // Remove selection from other options
@@ -53,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let destination = 'Selected Destination';
         let hotel = 'Selected Hotel';
+        
+        // Store the selected option type in window for reference
+        window.selectedOption = optionType;
         
         // Extract destination
         if (routeElement && routeElement.textContent === 'Route:') {

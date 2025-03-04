@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-10BGLEP714"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4RLHHRCDK"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
 
-        gtag('config', 'G-10BGLEP714');
+        gtag('config', 'G-4RLHHRCDK');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -108,6 +108,12 @@
     {% block content %}{% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Error Tracking -->
+    <script src="{{ url_for('static', filename='js/error-tracking.js') }}"></script>
+    
+    <!-- Google Analytics 4 Enhanced Events -->
+    <script src="{{ url_for('static', filename='js/ga4-events.js') }}"></script>
     
     <!-- Application Data -->
     <script src="{{ url_for('static', filename='js/modules/airports-data.js') }}"></script>

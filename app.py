@@ -6,18 +6,25 @@ import os
 from dotenv import load_dotenv
 import json
 from openai import OpenAI, RateLimitError, APIError, APIConnectionError
-from models import db, User, PointsProgram
 from services.ai_service import TravelPlanGenerator, TripValidationError
 
-# Load environment variables
-load_dotenv()
-
+# Create Flask app
 app = Flask(__name__)
 
 # Enhanced security settings
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///travel_planner.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Import models after app is created
+from models import db, User, PointsProgram
+from models.review import Review
+
+# Initialize the database with the app
+db.init_app(app)
+
+# Load environment variables
+load_dotenv()
 
 # Session security settings
 app.config['SESSION_COOKIE_SECURE'] = True  # Only send cookies over HTTPS
@@ -26,7 +33,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Restrict cross-site requests
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Session expiration
 
 # Initialize extensions
-db.init_app(app)
+# db.init_app(app) is already called above
 
 # Initialize login manager
 login_manager = LoginManager()
@@ -576,6 +583,10 @@ def travel_guides():
 def robots():
     return send_from_directory('static', 'robots.txt')
 
+@app.route('/.well-known/security.txt')
+def security_txt():
+    return send_from_directory(os.path.join('static', '.well-known'), 'security.txt')
+
 @app.route('/sitemap.xml')
 def sitemap():
     sitemap = SitemapGenerator('https://goaskmarshall.com')
@@ -595,6 +606,15 @@ def sitemap():
     
     for guide in guides:
         sitemap.add_url(f'/guides/{guide["slug"]}', priority=0.8, changefreq='monthly')
+    
+    # Add blog review pages
+    with app.app_context():
+        try:
+            reviews = Review.get_all_published()
+            for review in reviews:
+                sitemap.add_url(f'/reviews/{review.slug}', priority=0.8, changefreq='weekly')
+        except Exception as e:
+            app.logger.error(f"Error adding reviews to sitemap: {str(e)}")
     
     response = make_response(sitemap.generate())
     response.headers['Content-Type'] = 'application/xml'
@@ -668,5 +688,125 @@ def get_hotel_rankings():
     
     return jsonify(hotels)
 
+# Review routes
+@app.route('/reviews/<slug>')
+def view_review(slug):
+    review = Review.get_by_slug(slug)
+    if not review:
+        return render_template('error.html', 
+                              error_title="Review Not Found",
+                              error_message="The review you're looking for doesn't exist or has been removed.",
+                              back_link=url_for('travel_guides'),
+                              back_text="Back to Travel Guides")
+    
+    return render_template('review.html', review=review)
+
+@app.route('/api/reviews')
+def get_reviews():
+    reviews = Review.get_all_published()
+    result = []
+    for review in reviews:
+        result.append({
+            "title": review.title,
+            "slug": review.slug,
+            "location": review.location,
+            "summary": review.summary,
+            "author": review.author,
+            "image": review.image,
+            "created_at": review.created_at.strftime('%Y-%m-%d'),
+            "url": url_for('view_review', slug=review.slug)
+        })
+    return jsonify({"reviews": result})
+
+@app.route('/admin/reviews', methods=['GET'])
+@login_required
+def admin_reviews():
+    # Only allow admin users
+    if not hasattr(current_user, 'is_admin') or not current_user.is_admin:
+        return redirect(url_for('index'))
+        
+    reviews = Review.query.order_by(Review.created_at.desc()).all()
+    return render_template('admin/reviews.html', reviews=reviews)
+
+@app.route('/admin/reviews/new', methods=['GET', 'POST'])
+@login_required
+def new_review():
+    # Only allow admin users
+    if not hasattr(current_user, 'is_admin') or not current_user.is_admin:
+        return redirect(url_for('index'))
+        
+    if request.method == 'POST':
+        title = request.form.get('title')
+        location = request.form.get('location')
+        summary = request.form.get('summary')
+        content = request.form.get('content')
+        image = request.form.get('image')
+        is_published = 'is_published' in request.form
+        
+        review = Review(
+            title=title,
+            location=location,
+            summary=summary,
+            content=content,
+            image=image
+        )
+        review.is_published = is_published
+        
+        db.session.add(review)
+        db.session.commit()
+        
+        return redirect(url_for('admin_reviews'))
+        
+    return render_template('admin/review_form.html')
+
+@app.route('/admin/reviews/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_review(id):
+    # Only allow admin users
+    if not hasattr(current_user, 'is_admin') or not current_user.is_admin:
+        return redirect(url_for('index'))
+        
+    review = Review.get_by_id(id)
+    if not review:
+        flash('Review not found', 'danger')
+        return redirect(url_for('admin_reviews'))
+    
+    if request.method == 'POST':
+        review.title = request.form.get('title')
+        review.location = request.form.get('location')
+        review.summary = request.form.get('summary')
+        review.content = request.form.get('content')
+        review.image = request.form.get('image')
+        review.is_published = 'is_published' in request.form
+        review.slug = slugify(review.title)
+        
+        db.session.commit()
+        
+        return redirect(url_for('admin_reviews'))
+        
+    return render_template('admin/review_form.html', review=review)
+
+# Client-side error logging
+@app.route('/api/log-error', methods=['POST'])
+def log_client_error():
+    try:
+        error_data = request.json
+        app.logger.error(f"Client error: {error_data}")
+        return jsonify({"status": "success"})
+    except Exception as e:
+        app.logger.error(f"Error logging client error: {str(e)}")
+        return jsonify({"status": "error"}), 500
+
+# Error handlers
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    app.logger.error(f"Server error: {str(e)}")
+    return render_template('500.html'), 500
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5039)
+    app.run(debug=True, port=5041)

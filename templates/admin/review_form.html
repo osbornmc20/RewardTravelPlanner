@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if review %}Edit Review{% else %}New Review{% endif %} - Go Ask Marshall
+{% endblock %}
+
+{% block head %}
+<!-- Include SimpleMDE for markdown editing -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<main class="container admin-container">
+    <h1>{% if review %}Edit Review{% else %}New Review{% endif %}</h1>
+    
+    <form method="POST" class="review-form">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title" required 
+                   value="{{ review.title if review else '' }}">
+        </div>
+        
+        <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="location" name="location" required
+                   value="{{ review.location if review else '' }}">
+        </div>
+        
+        <div class="mb-3">
+            <label for="summary" class="form-label">Summary</label>
+            <textarea class="form-control" id="summary" name="summary" rows="3" required>{{ review.summary if review else '' }}</textarea>
+            <div class="form-text">A brief summary of the review (will be displayed in the card)</div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="content" class="form-label">Content (Markdown)</label>
+            <textarea class="form-control" id="content" name="content" rows="20" required>{{ review.content if review else '' }}</textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label for="image" class="form-label">Image URL</label>
+            <input type="text" class="form-control" id="image" name="image"
+                   value="{{ review.image if review else '' }}">
+            <div class="form-text">URL to the image for this review</div>
+        </div>
+        
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="is_published" name="is_published"
+                   {% if review and review.is_published %}checked{% endif %}>
+            <label class="form-check-label" for="is_published">Publish this review</label>
+        </div>
+        
+        <div class="mb-3">
+            <button type="submit" class="btn btn-primary">Save Review</button>
+            <a href="{{ url_for('admin_reviews') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var simplemde = new SimpleMDE({ 
+        element: document.getElementById("content"),
+        spellChecker: true,
+        autosave: {
+            enabled: true,
+            uniqueId: "review-editor",
+            delay: 1000,
+        },
+        toolbar: [
+            "bold", "italic", "heading", "|", 
+            "quote", "unordered-list", "ordered-list", "|", 
+            "link", "image", "table", "|",
+            "preview", "side-by-side", "fullscreen", "|",
+            "guide"
+        ]
+    });
+});
+</script>
+{% endblock %}

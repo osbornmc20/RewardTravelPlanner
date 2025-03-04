@@ -108,10 +108,11 @@
 }
 
 .recommendation-item:before {
-    content: "✓";
+    content: "•";
     position: absolute;
     left: 0;
-    color: #28a745;
+    color: #007bff;
+    font-size: 18px;
 }
 
 .recommendations-content {

@@ -448,8 +448,34 @@ const TripGenerator = {
                 // Get the option type from the button's data attribute
                 const button = e.target.closest('.continue-planning-btn');
                 if (button) {
-                    window.selectedOption = button.dataset.optionType;
-                    console.log('Selected option type:', window.selectedOption);
+                    const optionType = button.dataset.optionType;
+                    window.selectedOption = optionType;
+                    console.log('Selected option type:', optionType);
+                    
+                    // Update the MindTrip banner with the correct experience type
+                    const tripSummary = document.querySelector('.trip-summary');
+                    if (tripSummary) {
+                        // Get existing trip details
+                        const destination = tripSummary.querySelector('p:nth-child(1)')?.textContent.split(':')[1]?.trim() || '';
+                        const hotel = tripSummary.querySelector('p:nth-child(2)')?.textContent.split(':')[1]?.trim() || '';
+                        const month = tripSummary.querySelector('p:nth-child(3)')?.textContent.split(':')[1]?.trim() || '';
+                        const duration = tripSummary.querySelector('p:nth-child(4)')?.textContent.split(':')[1]?.trim() || '';
+                        
+                        // Update the badge and trip summary with the correct experience type
+                        tripSummary.innerHTML = `
+                            <div class="mb-2">
+                                <span class="badge ${optionType === 'luxury' ? 'bg-warning text-dark' : 'bg-info'} mb-2">
+                                    ${optionType === 'luxury' ? 'Luxury' : 'Economy'} Experience
+                                </span>
+                            </div>
+                            <div class="text-start">
+                                <p class="mb-2"><strong>Route:</strong> ${destination}</p>
+                                <p class="mb-2"><strong>Hotel:</strong> ${hotel}</p>
+                                <p class="mb-2"><strong>Travel Month:</strong> ${month}</p>
+                                <p class="mb-0"><strong>Duration:</strong> ${duration}</p>
+                            </div>
+                        `;
+                    }
                 }
                 
                 const defaultState = document.querySelector('.default-state');
@@ -508,8 +534,9 @@ const TripGenerator = {
 
                 const tripSummary = document.querySelector('.selected-trip-summary');
                 if (tripSummary) {
-                    const optionHeader = optionSection?.querySelector('h2');
-                    const isLuxury = optionHeader?.textContent.includes('Luxury');
+                    // Determine if luxury based on the selected option type, not from the header text
+                    const isLuxury = optionType === 'luxury';
+                    console.log('MindTrip Section - isLuxury:', isLuxury, 'optionType:', optionType);
                     
                     tripSummary.innerHTML = `
                         <div class="card">
@@ -679,8 +706,9 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
         const airlineMatch = sectionText.match(/Airline:([^\n]+)/);
         if (airlineMatch) result.airline = airlineMatch[1].trim();
         
-        const pointsProgramMatch = sectionText.match(/Points Program:([^\n]+)(?=\n|$)/);
-        if (pointsProgramMatch) result.points_program = pointsProgramMatch[1].trim();
+        // Extract flight points program - look in the Flight Details section
+        const flightSectionMatch = sectionText.match(/Flight Details[\s\S]*?Points Program:([^\n]+)/);
+        if (flightSectionMatch) result.points_program = flightSectionMatch[1].trim();
         
         const pointsUsedMatch = sectionText.match(/Points Used:([^\n]+)/);
         if (pointsUsedMatch) result.points_used = pointsUsedMatch[1].trim();
@@ -692,8 +720,9 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
         const propertyMatch = sectionText.match(/Property:([^\n]+)/);
         if (propertyMatch) result.property = propertyMatch[1].trim();
         
-        const hotelPointsProgramMatch = sectionText.match(/Points Program:.*?(\n.*?Points Program:([^\n]+)|$)/);
-        if (hotelPointsProgramMatch && hotelPointsProgramMatch[2]) result.hotel_points_program = hotelPointsProgramMatch[2].trim();
+        // Find the hotel points program by looking for Points Program after Hotel Option
+        const hotelSectionMatch = sectionText.match(/Hotel Option[\s\S]*?Points Program:([^\n]+)/);
+        if (hotelSectionMatch) result.hotel_points_program = hotelSectionMatch[1].trim();
         
         const totalPointsNeededMatch = sectionText.match(/Total Points Needed:([^\n]+)/);
         if (totalPointsNeededMatch) result.total_points_needed = totalPointsNeededMatch[1].trim();
@@ -705,8 +734,12 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
         const totalPointsUsedMatch = sectionText.match(/Total Points Used:([^\n]+)/);
         if (totalPointsUsedMatch) result.total_points_used = totalPointsUsedMatch[1].trim();
         
-        const airlinePointsMatch = sectionText.match(/Airline:([^\n]+)/);
-        if (airlinePointsMatch) result.airline_points = airlinePointsMatch[1].trim();
+        // Extract points needed for flight - look in Value Analysis section
+        const valueAnalysisSection = sectionText.match(/Value Analysis[\s\S]*/);
+        if (valueAnalysisSection) {
+            const flightPointsMatch = valueAnalysisSection[0].match(/(?:Airline|Flight):([^\n]+)/);
+            if (flightPointsMatch) result.airline_points = flightPointsMatch[1].trim();
+        }
         
         const hotelPointsMatch = sectionText.match(/Hotel:([^\n]+)/);
         if (hotelPointsMatch) result.hotel_points = hotelPointsMatch[1].trim();
@@ -789,6 +822,7 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
         let lines = recommendations.split('<br>');
         let formattedContent = '';
         let skipSection = false;
+        let inSection = false;
         
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
@@ -821,9 +855,14 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
                     continue;
                 }
                 formattedContent += `<h5 class="recommendation-category">${cleanedLine}</h5>`;
+                inSection = true;
             } else if (cleanedLine.startsWith('- ') || cleanedLine.startsWith('• ') || cleanedLine.startsWith('✓ ')) {
                 formattedContent += `<div class="recommendation-item">${cleanedLine.substring(2)}</div>`;
+            } else if (cleanedLine && inSection) {
+                // Add all non-header content as recommendation items with bullets
+                formattedContent += `<div class="recommendation-item">${cleanedLine}</div>`;
             } else if (cleanedLine) {
+                // For content not under a section header, don't add bullets
                 formattedContent += `<div>${cleanedLine}</div>`;
             }
         }
@@ -909,7 +948,7 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
         }
         
         if (section.airline_points) {
-            html += `<li><b>Airline:</b> ${section.airline_points}</li>`;
+            html += `<li><b>Flight:</b> ${section.airline_points}</li>`;
         }
         
         if (section.hotel_points) {
@@ -925,7 +964,7 @@ Please organize this by day (Day 1, Day 2, etc) and consider the local weather a
         
         // Continue Planning button
         html += `<div class="text-center">
-            <button class="continue-planning-btn" data-option-type="${isLuxury ? 'luxury' : 'economy'}"><i class="fas fa-plane"></i> Continue Planning</button>
+            <button class="continue-planning-btn select-trip-option" data-option-type="${isLuxury ? 'luxury' : 'economy'}"><i class="fas fa-plane"></i> Continue Planning</button>
         </div>`;
         
         html += `</div></div>`;

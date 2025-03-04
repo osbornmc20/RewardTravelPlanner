@@ -1,6 +1,6 @@
 # Trip Planner Web App
 
-A Flask-based web application for planning trips using points and miles.
+A Flask-based web application for planning trips using points and miles with blog review features.
 
 ## Features
 - Trip planning with multiple destinations
@@ -8,6 +8,8 @@ A Flask-based web application for planning trips using points and miles.
 - Support for both authenticated and anonymous users
 - Airport search with autocomplete
 - OpenAI integration for intelligent travel suggestions
+- Travel blog with destination reviews and recommendations
+- Image management for blog posts
 
 ## Local Development
 1. Install dependencies:
@@ -48,6 +50,24 @@ A Flask-based web application for planning trips using points and miles.
 3. Create a new project
 4. Add environment variables from `.env`
 5. Deploy!
+
+## Project Structure
+
+### Main Components
+- `app.py`: Main Flask application
+- `models/`: Database models including Review model for blog posts
+- `static/`: CSS, JavaScript, and image assets
+- `templates/`: HTML templates including travel-guides.html for blog display
+
+### Utility Scripts
+- `manage_reviews.py`: Command-line tool for managing blog reviews
+- `add_*_review.py`: Scripts for adding specific blog reviews
+
+### Archived Scripts
+One-time use scripts have been archived in the `scripts_archive_*` folder for reference. These include:
+- Image download and processing scripts
+- Blog content update scripts
+- Verification and checking scripts
 
 ## Environment Variables
 - `OPENAI_API_KEY`: Your OpenAI API key

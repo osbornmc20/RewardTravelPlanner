@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ review.title }} - Go Ask Marshall{% endblock %}
+
+{% block meta_description %}{{ review.summary }}{% endblock %}
+
+{% block head %}
+<!-- Canonical URL -->
+<link rel="canonical" href="{{ url_for('view_review', slug=review.slug, _external=True) }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/review.css') }}">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "{{ review.title }}",
+    "description": "{{ review.summary }}",
+    "image": "{{ review.image }}",
+    "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
+    "dateModified": "{{ review.updated_at.strftime('%Y-%m-%d') }}",
+    "author": {
+        "@type": "Person",
+        "name": "{{ review.author }}"
+    },
+    "publisher": {
+        "@type": "Organization",
+        "name": "Go Ask Marshall",
+        "url": "https://goaskmarshall.com",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "{{ url_for('static', filename='images/logo.png', _external=True) }}"
+        }
+    },
+    "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ url_for('view_review', slug=review.slug, _external=True) }}"
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<main class="container review-container">
+    <!-- Breadcrumbs -->
+    <nav aria-label="Breadcrumb" class="breadcrumbs">
+        <ol>
+            <li><a href="/">Home</a></li>
+            <li><a href="{{ url_for('travel_guides') }}">Travel Guides</a></li>
+            <li aria-current="page">{{ review.title }}</li>
+        </ol>
+    </nav>
+
+    <article class="review-article">
+        <header class="review-header">
+            <h1 class="review-title">{{ review.title }}</h1>
+            <div class="review-meta">
+                <span class="review-location">
+                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{ review.location }}
+                </span>
+                <span class="review-date">
+                    <i class="far fa-calendar-alt" aria-hidden="true"></i> {{ review.created_at.strftime('%B %d, %Y') }}
+                </span>
+                <span class="review-author">
+                    <i class="far fa-user" aria-hidden="true"></i> {{ review.author }}
+                </span>
+            </div>
+        </header>
+
+        {% if review.image %}
+        <div class="review-featured-image">
+            <img src="{{ review.image }}" 
+                 alt="{{ review.title }}" 
+                 loading="lazy"
+                 class="img-fluid">
+        </div>
+        {% endif %}
+
+        <div class="review-summary">
+            <p class="lead">{{ review.summary }}</p>
+        </div>
+
+        <div class="review-content">
+            {{ review.html_content|safe }}
+        </div>
+
+        <footer class="review-footer">
+            <div class="review-share">
+                <h3>Share this review</h3>
+                <div class="social-share-buttons">
+                    <a href="https://twitter.com/intent/tweet?url={{ url_for('view_review', slug=review.slug, _external=True) }}&text={{ review.title }}" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="btn btn-twitter">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ url_for('view_review', slug=review.slug, _external=True) }}" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="btn btn-facebook">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </article>
+</main>
+{% endblock %}
