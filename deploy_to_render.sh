@@ -3,6 +3,7 @@
 # This script should be run on the Render server during deployment
 
 echo "Starting deployment process..."
+echo "Running on: $(date)"
 
 # Create all tables if they don't exist
 echo "Creating database tables..."
